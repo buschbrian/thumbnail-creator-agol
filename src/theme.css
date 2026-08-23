@@ -1,0 +1,245 @@
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+.app-shell calcite-shell {
+  height: 100%;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0 0.75rem;
+  height: 3.2rem;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  white-space: nowrap;
+}
+
+.brand strong {
+  font-size: var(--calcite-font-size-0);
+}
+
+.title-input {
+  flex: 0 1 320px;
+}
+
+.topbar-actions {
+  margin-left: auto;
+  display: flex;
+  gap: 0.125rem;
+}
+
+.canvas-wrap {
+  width: 100%;
+  height: 100%;
+  background: #2b2b2b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.canvas-frame {
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.12),
+    0 16px 40px rgba(0, 0, 0, 0.5);
+}
+
+.panel-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.5rem;
+  overflow-y: auto;
+}
+
+.right-stack {
+  height: 100%;
+}
+
+.panel-stack calcite-panel {
+  margin-bottom: 0.5rem;
+}
+
+.properties-body,
+.export-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  padding: 0.5rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.field-label {
+  font-size: var(--calcite-font-size--2);
+  color: var(--calcite-color-text-2);
+}
+
+.field-hint {
+  color: var(--calcite-color-text-3);
+  font-size: var(--calcite-font-size--3);
+}
+
+.field-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.size-inputs calcite-input-number {
+  width: 84px;
+}
+
+.divider {
+  border: none;
+  border-top: 1px solid var(--calcite-color-border-2);
+  margin: 0.25rem 0;
+}
+
+.native-select {
+  font-family: inherit;
+  font-size: var(--calcite-font-size--2);
+  padding: 0.35rem;
+  border: 1px solid var(--calcite-color-border-input);
+  border-radius: var(--calcite-border-radius);
+  background: var(--calcite-color-foreground-1);
+  color: var(--calcite-color-text-1);
+}
+
+.add-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.4rem;
+}
+
+.template-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.template-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  padding: 0.45rem 0.5rem;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--calcite-border-radius);
+  text-align: left;
+  cursor: pointer;
+  color: var(--calcite-color-text-1);
+}
+
+.template-row:hover,
+.template-row:focus-visible {
+  background: var(--calcite-color-surface-hover);
+  border-color: var(--calcite-color-border-1);
+  outline-offset: -2px;
+}
+
+.swatch-pair {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.swatch {
+  width: 26px;
+  height: 9px;
+  border-radius: 2px;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+}
+
+.template-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.template-text small {
+  color: var(--calcite-color-text-3);
+}
+
+.row-actions {
+  display: flex;
+}
+
+.empty-hint {
+  color: var(--calcite-color-text-3);
+  font-size: var(--calcite-font-size--2);
+  padding: 0.5rem;
+  margin: 0;
+}
+
+.export-warnings {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.filename-preview {
+  font-family: var(--calcite-code-family);
+  font-size: var(--calcite-font-size--2);
+  color: var(--calcite-color-text-2);
+  word-break: break-all;
+  margin: 0;
+}
+
+.alert-stack {
+  position: fixed;
+  top: 3.6rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 3000;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: min(480px, 92vw);
+}
+
+.picker-toolbar {
+  padding: 0.5rem 0.25rem;
+}
+
+.icon-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(58px, 1fr));
+  gap: 0.3rem;
+  max-height: 55vh;
+  overflow-y: auto;
+  padding: 0.25rem;
+}
+
+.icon-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--calcite-border-radius);
+  color: var(--calcite-color-text-1);
+  cursor: pointer;
+  padding: 0.55rem;
+}
+
+.icon-cell:hover,
+.icon-cell:focus-visible {
+  background: var(--calcite-color-surface-hover);
+  border-color: var(--calcite-color-brand);
+}

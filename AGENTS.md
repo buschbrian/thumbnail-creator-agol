@@ -2,135 +2,78 @@
 
 ## Project
 
-This project is ArcGIS Thumbnail Maker, a client-side web app for creating thumbnails for ArcGIS Online content.
-
-The app lets users:
-- Upload background images
-- Add text
-- Add logos
-- Add ArcGIS/Esri-style icons
-- Use footer/sidebar templates
-- Export PNG/JPEG thumbnails
-
-The target user is GIS staff creating consistent ArcGIS Online thumbnails quickly.
+ArcGIS Thumbnail Maker — a client-side web app for creating ArcGIS Online
+thumbnails. The app is a Vite + React 19 SPA (no backend, no SSR). It was
+built from scratch in this repo; the original Next.js plan was replaced by
+Vite because the tool is 100% client-side.
 
 ## Stack
 
-Use:
-- Next.js
-- React
-- TypeScript
-- Esri Calcite Design System
-- Zustand
-- Konva.js / react-konva
-- Vitest
-- Playwright
-
-Prefer client-side functionality. Do not introduce a backend unless explicitly requested.
-
-## Design direction
-
-The UI should feel:
-- Simple
-- Modern
-- Esri-adjacent
-- Professional
-- Clean
-- Accessible
-
-Prefer Calcite components for app chrome and controls.
-
-Avoid making the app feel like a full Canva clone.
-
-## Current priority
-
-The app already exists and runs. Do not rebuild from scratch.
-
-Focus on:
-1. Refinement
-2. Stability
-3. UI polish
-4. Export correctness
-5. Template quality
-6. Accessibility
-7. Test coverage
-
-## Core product requirements
-
-The app should support:
-- 600 x 400 default ArcGIS Online thumbnail preset
-- 400 x 400 square preset
-- 1200 x 800 high-res preset
-- Custom size preset
-- Background upload
-- Logo upload
-- Text layers
-- Footer/sidebar templates
-- ArcGIS-style icon picker
-- PNG export
-- JPEG export
-- Export validation warnings
-- Undo/redo where practical
-
-## Engineering rules
-
-Before making changes:
-- Inspect the existing codebase.
-- Identify the current architecture.
-- Preserve working functionality.
-- Make small, reviewable changes.
-- Do not rewrite working systems without a clear reason.
-- Prefer improving existing components over replacing them.
-- Keep TypeScript strict and readable.
-
-After making changes:
-- Run lint if available.
-- Run tests if available.
-- Run build.
-- Report what changed, what was tested, and what remains.
+- Vite + React + TypeScript (strict)
+- Esri Calcite Design System v5 (`@esri/calcite-components`) used directly
+  as web components — the `@esri/calcite-components-react` wrappers are
+  deprecated and are NOT installed
+- Konva.js / react-konva for the canvas
+- Zustand + zundo for state and undo/redo
+- Vitest (unit) and Playwright (e2e)
+- GitHub Pages deployment via `.github/workflows/deploy.yml`
 
 ## Commands
 
-First inspect package.json and use the actual project commands.
+- `npm run dev` — dev server at `/thumbnail-creator-agol/`
+- `npm run build` — icon generation + `tsc -b` + vite build
+- `npm run lint` / `npm run typecheck`
+- `npm run test` — Vitest unit tests
+- `npm run test:e2e` — Playwright (needs `npx playwright install chromium` once)
 
-Common commands may be:
-- npm install
-- npm run dev
-- npm run lint
-- npm run test
-- npm run build
+After changes: run lint, typecheck, test, and build. Keep all four green.
 
-Do not assume pnpm, yarn, or npm until package manager files are inspected.
+## Architecture rules
 
-## Accessibility
+- Layers are a discriminated union in `src/state/types.ts`; every new layer
+  type must be handled in `LayerNode.tsx`, `PropertiesPanel.tsx`,
+  `LayersList.tsx`, and the store actions.
+- History only tracks `{ doc, backgroundColor, layers }`. During canvas drags
+  the Konva node is mutated directly and committed once on dragend/transformend.
+- For live control edits use the pause/resume pattern: `pauseHistory()` before
+  continuous updates, then commit the final value and call `resumeHistory()`.
+- Export renders an offscreen stage by cloning only the Konva layer named
+  `"content"`. Guides, transformer, and snap lines live on the `"guides"`
+  layer and are never exported. Never add UI chrome to the content layer.
+- The background fill rect lives inside the content layer (`id="bg-fill"`).
 
-Use accessible labels for:
-- Icon buttons
-- Upload controls
-- Export controls
-- Template buttons
-- Layer controls
+## Calcite v5 gotchas
 
-Use Calcite alerts/notices for errors and warnings.
+- Events are camelCase DOM events (`calciteInputTextInput`,
+  `calciteSegmentedControlChange`, `calciteSelectChange`, …). Attach them with
+  `useDomEvents()` from `src/hooks/useDomEvents.ts`; JSX `onCalciteX` props do
+  not work reliably.
+- Component registration is explicit per-component imports in
+  `src/setupCalcite.ts`; add new components there or they render as nothing.
+- `setAssetPath` points to `${import.meta.env.BASE_URL}calcite/assets`;
+  those assets are copied by `scripts/copy-calcite-assets.mjs` (postinstall).
+- Some props renamed vs Stencil era: blocks use `expanded` not `open`;
+  buttons use `icon-start`; actions still use `icon`.
+- Several list/chip/select components require a `label` prop.
 
-## Export behavior
+## Icons
 
-Export should:
-- Hide canvas guides and selection handles
-- Export the canvas exactly as shown
-- Default to PNG
-- Support JPEG with quality control
-- Warn on unusual dimensions
-- Warn on unusual aspect ratio
-- Use a sensible filename
+The picker catalog is generated by `npm run generate:icons` into
+`src/icons/generated/iconData.ts` (gitignored). It filters
+`@esri/calcite-ui-icons` exports ending in `16` through include/exclude
+patterns in `scripts/generate-icon-index.mjs`. Adjust patterns there; never
+commit generated data.
 
-## Do not do
+## Licensing constraints
 
-Do not:
-- Add authentication in the MVP
-- Add ArcGIS Online API integration yet
-- Add a database yet
-- Add server-side image processing yet
-- Replace Calcite with a custom design system
-- Import massive icon libraries unnecessarily
-- Break the current running app
+Calcite Design System and Calcite UI Icons are © Esri under the Esri Master
+Agreement. Keep them as npm dependencies and derive assets at build time;
+do not vendor their code or icon path data into this repository.
+
+## Do not
+
+- Do not add a backend, auth, AGOL API integration, or persistence.
+- Do not replace Calcite with another design system.
+- Do not break export correctness: exported pixels must equal document size
+  exactly, with no editor chrome.
+- Do not commit `dist/`, `public/calcite/`, or generated icon data.

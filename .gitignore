@@ -1,0 +1,14 @@
+node_modules/
+dist/
+public/calcite/
+src/icons/generated/
+coverage/
+test-results/
+playwright-report/
+blob-report/
+.vs/
+.vscode/
+.idea/
+*.local
+.env
+.DS_Store
