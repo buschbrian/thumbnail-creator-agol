@@ -1,16 +1,16 @@
 import { useCallback } from "react";
 import { useEditorStore, pauseHistory, resumeHistory } from "../state/store";
+import { useUIStore } from "../ui/uiStore";
+import { performExport } from "../export/exportNow";
 import { useDomEvents } from "../hooks/useDomEvents";
 import { useHistoryFlags } from "../hooks/useHistoryFlags";
 
 function BrandMark(): React.ReactElement {
   return (
-    <svg width="22" height="22" viewBox="0 0 16 16" aria-hidden="true">
-      <rect width="16" height="16" rx="2.5" fill="#0079c1" />
-      <path
-        d="M4 11V6.5L7 4l3 2.5h3V11z"
-        fill="#ffffff"
-      />
+    <svg width="24" height="24" viewBox="0 0 16 16" aria-hidden="true">
+      <rect width="16" height="16" rx="3" fill="#0079c1" />
+      <path d="M4 11V6.5L7 4l3 2.5h3V11z" fill="#ffffff" />
+      <circle cx="11.4" cy="4.6" r="1.15" fill="#ffb600" />
     </svg>
   );
 }
@@ -18,6 +18,8 @@ function BrandMark(): React.ReactElement {
 export function TopBar() {
   const doc = useEditorStore((s) => s.doc);
   const flags = useHistoryFlags();
+  const exportBusy = useUIStore((s) => s.exportBusy);
+  const exportFormat = useUIStore((s) => s.exportSettings.format);
 
   const onInput = useCallback((event: Event) => {
     pauseHistory();
@@ -40,41 +42,76 @@ export function TopBar() {
     <div className="topbar">
       <div className="brand">
         <BrandMark />
-        <strong>ArcGIS Thumbnail Maker</strong>
-        <calcite-chip
-          scale="s"
-          kind="brand"
-          appearance="outline-fill"
-          label={`Canvas size ${doc.width} by ${doc.height} pixels`}
-        >
-          {doc.width} × {doc.height}
-        </calcite-chip>
+        <span className="brand-name">Thumbnail Maker</span>
+        <span className="brand-scope">for ArcGIS Online</span>
       </div>
 
       <calcite-input-text
         ref={titleRef}
         className="title-input"
-        placeholder="Thumbnail title"
-        aria-label="Thumbnail title used for export filename"
+        placeholder="Untitled thumbnail"
+        aria-label="Thumbnail title used for the export filename"
         value={doc.title}
         scale="s"
         max-length={80}
       />
 
       <div className="topbar-actions">
-        <calcite-action
-          icon="undo"
-          text="Undo"
-          text-enabled={false}
-          disabled={!flags.canUndo}
-          onClick={() => useEditorStore.temporal.getState().undo()}
-        />
-        <calcite-action
-          icon="redo"
-          text="Redo"
-          disabled={!flags.canRedo}
-          onClick={() => useEditorStore.temporal.getState().redo()}
-        />
+        <div className="history-cluster" role="group" aria-label="History">
+          <button
+            type="button"
+            className="icon-btn"
+            aria-label="Undo (Ctrl+Z)"
+            title="Undo (Ctrl+Z)"
+            disabled={!flags.canUndo}
+            onClick={() => useEditorStore.temporal.getState().undo()}
+          >
+            <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true">
+              <path
+                d="M6 3.5 2.5 7 6 10.5M2.5 7H10a3.5 3.5 0 0 1 0 7H7"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
+          <button
+            type="button"
+            className="icon-btn"
+            aria-label="Redo (Ctrl+Y)"
+            title="Redo (Ctrl+Y)"
+            disabled={!flags.canRedo}
+            onClick={() => useEditorStore.temporal.getState().redo()}
+          >
+            <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true">
+              <path
+                d="M10 3.5 13.5 7 10 10.5M13.5 7H6a3.5 3.5 0 0 0 0 7h3"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
+        </div>
+
+        <span className="size-chip" title="Canvas dimensions">
+          {doc.width} × {doc.height}
+        </span>
+
+        <calcite-button
+          kind="brand"
+          scale="s"
+          icon-start="download"
+          loading={exportBusy}
+          aria-label={`Export ${exportFormat.toUpperCase()} thumbnail`}
+          onClick={() => void performExport()}
+        >
+          Export
+        </calcite-button>
       </div>
     </div>
   );

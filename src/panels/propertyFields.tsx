@@ -1,5 +1,6 @@
 import { useCallback } from "react";
 import { useDomEvents } from "../hooks/useDomEvents";
+import { ColorSwatch } from "./ColorSwatch";
 
 export interface PatchTools {
   live: (patch: Record<string, unknown>) => void;
@@ -103,31 +104,20 @@ export function ColorField({
   tools: PatchTools;
 }) {
   const onLive = useCallback(
-    (event: Event) => {
-      const next = (event.target as HTMLInputElement).value;
-      tools.live({ [patchKey]: next });
-    },
+    (hex: string) => tools.live({ [patchKey]: hex }),
     [tools, patchKey],
   );
   const onCommit = useCallback(
-    (event: Event) => {
-      const next = (event.target as HTMLInputElement).value;
-      tools.commit({ [patchKey]: next });
-    },
+    (hex: string) => tools.commit({ [patchKey]: hex }),
     [tools, patchKey],
   );
-  const ref = useDomEvents([
-    ["calciteColorPickerInput", onLive],
-    ["calciteColorPickerChange", onCommit],
-  ]);
   return (
     <Field label={label}>
-      <calcite-color-picker
-        ref={ref}
-        scale="s"
+      <ColorSwatch
+        label={label}
         value={value}
-        aria-label={label}
-        hide-hex-input
+        onLive={onLive}
+        onCommit={onCommit}
       />
     </Field>
   );

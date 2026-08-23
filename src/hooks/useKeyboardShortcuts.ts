@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useEditorStore } from "../state/store";
+import { performExport } from "../export/exportNow";
 
 function isTypingTarget(event: KeyboardEvent): boolean {
   return event
@@ -20,6 +21,12 @@ export function useKeyboardShortcuts(): void {
     const onKeyDown = (event: KeyboardEvent): void => {
       const store = useEditorStore.getState();
       const mod = event.ctrlKey || event.metaKey;
+
+      if (mod && event.key.toLowerCase() === "s") {
+        event.preventDefault();
+        void performExport();
+        return;
+      }
 
       if (mod && event.key.toLowerCase() === "z") {
         if (isTypingTarget(event)) return;

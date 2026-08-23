@@ -40,6 +40,15 @@ function TextProperties({
     ["calciteTextAreaChange", onTextEvent],
   ]);
 
+  const onFontChange = useCallback(
+    (event: Event) => {
+      const next = (event.target as unknown as { value: string }).value;
+      tools.commit({ fontId: next });
+    },
+    [tools],
+  );
+  const fontRef = useDomEvents([["calciteSelectChange", onFontChange]]);
+
   return (
     <>
       <Field label="Content">
@@ -53,18 +62,18 @@ function TextProperties({
       </Field>
 
       <Field label="Font">
-        <select
-          className="native-select"
+        <calcite-select
+          ref={fontRef}
+          scale="s"
           value={layer.fontId}
-          aria-label="Font family"
-          onChange={(event) => tools.commit({ fontId: event.target.value })}
+          label="Font family"
         >
           {FONT_OPTIONS.map((font) => (
-            <option key={font.id} value={font.id}>
+            <calcite-option key={font.id} value={font.id}>
               {font.label}
-            </option>
+            </calcite-option>
           ))}
-        </select>
+        </calcite-select>
       </Field>
 
       <SegmentedField

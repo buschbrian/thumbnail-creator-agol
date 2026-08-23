@@ -1,22 +1,18 @@
-import { useCallback, useMemo, useState } from "react";
-import { useEditorStore } from "../state/store";
-import { stageRef } from "../canvas/stageRef";
-import { buildFilename } from "../export/filename";
-import { validateDimensions } from "../export/validation";
-import { downloadBlob } from "../export/download";
-import { renderThumbnailBlob } from "../export/exportImage";
+import { useMemo } from "react";
 import { useUIStore } from "../ui/uiStore";
+import { validateDimensions } from "./../export/validation";
+import { buildFilename } from "../export/filename";
+import { performExport } from "../export/exportNow";
+import { useEditorStore } from "../state/store";
 import { useDomEvents } from "../hooks/useDomEvents";
 
 export function ExportPanel() {
   const doc = useEditorStore((s) => s.doc);
-  const select = useEditorStore((s) => s.select);
-  const pushAlert = useUIStore((s) => s.pushAlert);
+  const exportSettings = useUIStore((s) => s.exportSettings);
+  const setExportSettings = useUIStore((s) => s.setExportSettings);
+  const exportBusy = useUIStore((s) => s.exportBusy);
 
-  const [format, setFormat] = useState<"png" | "jpeg">("png");
-  const [quality, setQuality] = useState(90);
-  const [busy, setBusy] = useState(false);
-
+  const { format, quality } = exportSettings;
   const extension = format === "png" ? "png" : "jpeg";
   const filename = buildFilename(doc.title, doc.width, doc.height, extension);
 
@@ -30,43 +26,23 @@ export function ExportPanel() {
       "calciteSegmentedControlChange",
       (event) => {
         const value = (event.target as HTMLInputElement).value;
-        if (value === "png" || value === "jpeg") setFormat(value);
+        if (value === "png" || value === "jpeg") setExportSettings({ format: value });
       },
     ],
   ]);
 
   const qualityRef = useDomEvents([
-    ["calciteSliderInput", (event) =>
-      setQuality(Number((event.target as HTMLInputElement).value)),
+    [
+      "calciteSliderInput",
+      (event) =>
+        setExportSettings({
+          quality: Number((event.target as HTMLInputElement).value),
+        }),
     ],
   ]);
 
-  const onExport = useCallback(async () => {
-    const stage = stageRef.current;
-    if (!stage || busy) return;
-
-    setBusy(true);
-    try {
-      select(null);
-      await document.fonts.ready;
-      await new Promise((resolve) => requestAnimationFrame(() => resolve(null)));
-      const blob = await renderThumbnailBlob(
-        stage,
-        doc.width,
-        doc.height,
-        { format, quality },
-      );
-      downloadBlob(blob, filename);
-      pushAlert("success", "Thumbnail exported", filename);
-    } catch (error) {
-      pushAlert("danger", "Export failed", (error as Error).message);
-    } finally {
-      setBusy(false);
-    }
-  }, [busy, doc.width, doc.height, filename, format, quality, pushAlert, select]);
-
   return (
-    <div className="export-body">
+    <div className="properties-body">
       <div className="field">
         <span className="field-label">Format</span>
         <calcite-segmented-control
@@ -86,7 +62,7 @@ export function ExportPanel() {
 
       {format === "jpeg" ? (
         <div className="field">
-          <span className="field-label">JPEG quality ({quality})</span>
+          <span className="field-label">Quality · {quality}</span>
           <calcite-slider
             ref={qualityRef}
             scale="s"
@@ -99,24 +75,41 @@ export function ExportPanel() {
         </div>
       ) : null}
 
+      <div className="export-meta">
+        <span className="field-label">File name</span>
+        <code className="filename-preview">{filename}</code>
+      </div>
+
       {warnings.length > 0 ? (
-        <div className="export-warnings" role="alert">
+        <ul className="export-warnings">
           {warnings.map((warning) => (
-            <calcite-notice key={warning.code} kind="warning" scale="s" icon open>
-              <div slot="message">{warning.message}</div>
-            </calcite-notice>
+            <li key={warning.code} className="warning-item">
+              <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
+                <path
+                  d="M8 1.5 15 14H1z"
+                  fill="#ffb600"
+                  stroke="#b8860b"
+                  strokeWidth="0.6"
+                />
+                <path d="M8 6v4.2M8 12.1v.9" stroke="#4a3b00" strokeWidth="1.4" strokeLinecap="round" />
+              </svg>
+              {warning.message}
+            </li>
           ))}
-        </div>
+        </ul>
       ) : null}
 
-      <p className="filename-preview">{filename}</p>
+      <p className="field-hint">
+        Exports at exactly {doc.width} × {doc.height} pixels — editor zoom,
+        guides, and selection handles are never included.
+      </p>
 
       <calcite-button
         width="full"
         icon-start="download"
-        loading={busy}
+        loading={exportBusy}
         aria-label={`Download ${filename}`}
-        onClick={() => void onExport()}
+        onClick={() => void performExport()}
       >
         Download {format.toUpperCase()}
       </calcite-button>

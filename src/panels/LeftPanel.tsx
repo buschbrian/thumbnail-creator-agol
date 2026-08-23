@@ -4,6 +4,7 @@ import { TEMPLATES } from "../templates/templates";
 import { useEditorStore } from "../state/store";
 import { useUIStore } from "../ui/uiStore";
 import { useDomEvents } from "../hooks/useDomEvents";
+import { ColorSwatch } from "./ColorSwatch";
 import type { FitMode } from "../state/types";
 
 function readFileAsImage(
@@ -26,11 +27,76 @@ function readFileAsImage(
   });
 }
 
+function TemplatePreview({ id }: { id: string }): React.ReactElement {
+  switch (id) {
+    case "footer-dark":
+      return (
+        <span className="tw" aria-hidden="true">
+          <span className="tw-photo" />
+          <span className="tw-rule tw-accent" />
+          <span className="tw-band tw-dark">
+            <i className="tw-line w60 light" />
+            <i className="tw-line w35 light dim" />
+          </span>
+        </span>
+      );
+    case "footer-light":
+      return (
+        <span className="tw" aria-hidden="true">
+          <span className="tw-photo" />
+          <span className="tw-band tw-light-band">
+            <i className="tw-edge" />
+            <i className="tw-line w60 dark" />
+            <i className="tw-line w35 dark dim" />
+          </span>
+        </span>
+      );
+    case "side-accent":
+      return (
+        <span className="tw" aria-hidden="true">
+          <span className="tw-photo" />
+          <span className="tw-bar-left" />
+          <span className="tw-title-block">
+            <i className="tw-line w70 light" />
+            <i className="tw-line w45 light dim" />
+          </span>
+        </span>
+      );
+    case "top-banner-navy":
+      return (
+        <span className="tw" aria-hidden="true">
+          <span className="tw-photo" />
+          <span className="tw-band tw-top tw-navy">
+            <i className="tw-line w55 light" />
+            <i className="tw-line w30 light dim" />
+          </span>
+        </span>
+      );
+    case "corner-chip":
+      return (
+        <span className="tw" aria-hidden="true">
+          <span className="tw-photo" />
+          <span className="tw-chip">
+            <i className="tw-line w80 light" />
+            <i className="tw-line w50 light dim" />
+          </span>
+        </span>
+      );
+    default:
+      return (
+        <span className="tw tw-blank" aria-hidden="true">
+          <span className="tw-dash" />
+        </span>
+      );
+  }
+}
+
 export function LeftPanel() {
   const doc = useEditorStore((s) => s.doc);
   const backgroundColor = useEditorStore((s) => s.backgroundColor);
   const layers = useEditorStore((s) => s.layers);
   const setSize = useEditorStore((s) => s.setSize);
+  const setBackgroundColor = useEditorStore((s) => s.setBackgroundColor);
   const setBackgroundImage = useEditorStore((s) => s.setBackgroundImage);
   const removeBackgroundImage = useEditorStore((s) => s.removeBackgroundImage);
   const addText = useEditorStore((s) => s.addText);
@@ -81,42 +147,17 @@ export function LeftPanel() {
     [addLogo, pushAlert],
   );
 
-  const presetGroupRef = useDomEvents([
-    [
-      "calciteRadioButtonChange",
-      (event) => {
-        const target = event.target as HTMLElement;
-        if (!(target instanceof Element)) return;
-        const value = target.getAttribute("value");
-        const preset = SIZE_PRESETS.find((p) => p.id === value);
-        if (preset) setSize(preset.width, preset.height);
-      },
-    ],
-  ]);
-
   const customWidthRef = useDomEvents([
     [
       "calciteInputNumberInput",
-      (event) =>
-        setCustomWidth((event.target as HTMLInputElement).value),
+      (event) => setCustomWidth((event.target as HTMLInputElement).value),
     ],
   ]);
 
   const customHeightRef = useDomEvents([
     [
       "calciteInputNumberInput",
-      (event) =>
-        setCustomHeight((event.target as HTMLInputElement).value),
-    ],
-  ]);
-
-  const bgColorRef = useDomEvents([
-    [
-      "calciteColorPickerInput",
-      (event) =>
-        useEditorStore
-          .getState()
-          .setBackgroundColor((event.target as HTMLInputElement).value),
+      (event) => setCustomHeight((event.target as HTMLInputElement).value),
     ],
   ]);
 
@@ -163,42 +204,60 @@ export function LeftPanel() {
 
   return (
     <div className="panel-stack">
-      <calcite-block heading="Canvas size" description="Thumbnail presets" expanded>
-        <calcite-radio-button-group
-          name="size-preset"
-          layout="vertical"
-          scale="s"
-          aria-label="Canvas size preset"
-          ref={presetGroupRef}
-        >
+      <section className="panel-section" aria-label="Canvas size">
+        <h3 className="section-title">Size</h3>
+        <div role="radiogroup" aria-label="Canvas size preset" className="preset-grid">
           {SIZE_PRESETS.map((preset) => (
-            <calcite-radio-button
+            <button
               key={preset.id}
-              value={preset.id}
-              checked={activePresetId === preset.id}
+              type="button"
+              role="radio"
+              aria-checked={activePresetId === preset.id}
+              className={`preset-card${activePresetId === preset.id ? " is-active" : ""}`}
+              onClick={() => setSize(preset.width, preset.height)}
+              title={preset.description}
             >
-              {preset.label} · {preset.width} × {preset.height}
-            </calcite-radio-button>
+              <span
+                className={`preset-thumb${preset.id === "square" ? " is-square" : ""}`}
+                aria-hidden="true"
+              >
+                <span className="preset-thumb-art" />
+              </span>
+              <span className="preset-name">{preset.label}</span>
+              <span className="preset-dims">
+                {preset.width}×{preset.height}
+              </span>
+            </button>
           ))}
-          <calcite-radio-button
-            value="custom"
-            checked={activePresetId === "custom"}
+          <button
+            type="button"
+            role="radio"
+            aria-checked={activePresetId === "custom"}
+            className={`preset-card${activePresetId === "custom" ? " is-active" : ""}`}
+            onClick={() => setSize(800, 600)}
+            title="Jump to a custom 800 × 600 canvas, then fine-tune below"
           >
-            Custom size
-          </calcite-radio-button>
-        </calcite-radio-button-group>
+            <span className="preset-thumb is-custom" aria-hidden="true">
+              <span className="preset-thumb-art" />
+            </span>
+            <span className="preset-name">Custom</span>
+            <span className="preset-dims">any size</span>
+          </button>
+        </div>
 
         {activePresetId === "custom" ? (
           <div className="field-row size-inputs">
             <calcite-input-number
-              ref={customWidthRef as never}
+              ref={customWidthRef}
               scale="s"
               value={customWidth}
               aria-label="Custom width in pixels"
             />
-            <span aria-hidden="true">×</span>
+            <span className="x-sep" aria-hidden="true">
+              ×
+            </span>
             <calcite-input-number
-              ref={customHeightRef as never}
+              ref={customHeightRef}
               scale="s"
               value={customHeight}
               aria-label="Custom height in pixels"
@@ -212,17 +271,15 @@ export function LeftPanel() {
             </calcite-button>
           </div>
         ) : null}
-      </calcite-block>
+      </section>
 
-      <calcite-block heading="Background" expanded>
-        <div className="field">
-          <calcite-color-picker
-            ref={bgColorRef}
-            scale="s"
-            value={backgroundColor}
-            aria-label="Background color"
-          />
-        </div>
+      <section className="panel-section" aria-label="Background">
+        <h3 className="section-title">Background</h3>
+        <ColorSwatch
+          label="Background color"
+          value={backgroundColor}
+          onCommit={setBackgroundColor}
+        />
 
         <input
           ref={bgFileRef}
@@ -234,17 +291,18 @@ export function LeftPanel() {
         <div className="field-row">
           <calcite-button
             scale="s"
+            appearance="outline-fill"
             icon-start="upload"
             width="full"
             onClick={() => bgFileRef.current?.click()}
           >
-            Upload image
+            Upload photo
           </calcite-button>
           {backgroundLayer ? (
             <calcite-button
               scale="s"
               kind="danger"
-              appearance="outline"
+              appearance="transparent"
               icon-start="trash"
               aria-label="Remove background image"
               onClick={removeBackgroundImage}
@@ -254,7 +312,9 @@ export function LeftPanel() {
 
         {backgroundLayer && backgroundLayer.type === "backgroundImage" ? (
           <div className="field">
-            <label htmlFor="bg-fit">Image fit</label>
+            <label className="field-label" htmlFor="bg-fit">
+              Image fit
+            </label>
             <calcite-select
               id="bg-fit"
               ref={bgFitRef}
@@ -268,46 +328,61 @@ export function LeftPanel() {
             </calcite-select>
           </div>
         ) : null}
-      </calcite-block>
+      </section>
 
-      <calcite-block heading="Add elements" expanded>
+      <section className="panel-section" aria-label="Add elements">
+        <h3 className="section-title">Add</h3>
         <div className="add-grid">
-          <calcite-button
-            scale="s"
-            appearance="outline-fill"
-            icon-start="text"
+          <button
+            type="button"
+            className="add-tile"
             aria-label="Add text layer"
             onClick={() => addText()}
           >
+            <span className="add-tile-glyph glyph-text" aria-hidden="true">
+              T
+            </span>
             Text
-          </calcite-button>
-          <calcite-button
-            scale="s"
-            appearance="outline-fill"
-            icon-start="rectangle"
+          </button>
+          <button
+            type="button"
+            className="add-tile"
             aria-label="Add rectangle layer"
             onClick={() => addRectangle()}
           >
+            <span
+              className="add-tile-glyph glyph-shape"
+              aria-hidden="true"
+            />
             Shape
-          </calcite-button>
-          <calcite-button
-            scale="s"
-            appearance="outline-fill"
-            icon-start="image"
+          </button>
+          <button
+            type="button"
+            className="add-tile"
             aria-label="Add logo from file"
             onClick={() => logoFileRef.current?.click()}
           >
+            <svg viewBox="0 0 16 16" width="18" height="18" aria-hidden="true">
+              <path
+                d="M2 12.5 6 8l3 3 2-2.5 3 4v1H2z"
+                fill="currentColor"
+                opacity="0.85"
+              />
+              <circle cx="5.2" cy="5.2" r="1.4" fill="#ffb600" />
+            </svg>
             Logo
-          </calcite-button>
-          <calcite-button
-            scale="s"
-            appearance="outline-fill"
-            icon-start="apps"
+          </button>
+          <button
+            type="button"
+            className="add-tile"
             aria-label="Open ArcGIS style icon picker"
             onClick={() => openIconPicker()}
           >
+            <span className="add-tile-glyph glyph-icon" aria-hidden="true">
+              ✦
+            </span>
             Icon
-          </calcite-button>
+          </button>
         </div>
         <input
           ref={logoFileRef}
@@ -316,32 +391,24 @@ export function LeftPanel() {
           hidden
           onChange={onLogoUpload}
         />
-      </calcite-block>
+      </section>
 
-      <calcite-block
-        heading="Templates"
-        description="Quick professional layouts"
-        expanded
-      >
+      <section className="panel-section" aria-label="Templates">
+        <h3 className="section-title">
+          Templates
+          <span className="section-hint">replaces the canvas</span>
+        </h3>
         <div className="template-list">
           {TEMPLATES.map((template) => (
             <button
               key={template.id}
               type="button"
-              className="template-row"
+              className={`template-row${template.id === "blank" ? " is-muted" : ""}`}
               aria-label={`Apply template ${template.name}`}
+              title={template.description}
               onClick={() => applyTemplate(template.id)}
             >
-              <span className="swatch-pair" aria-hidden="true">
-                <span
-                  className="swatch"
-                  style={{ background: template.swatch[0] }}
-                />
-                <span
-                  className="swatch"
-                  style={{ background: template.swatch[1] }}
-                />
-              </span>
+              <TemplatePreview id={template.id} />
               <span className="template-text">
                 <strong>{template.name}</strong>
                 <small>{template.description}</small>
@@ -349,7 +416,7 @@ export function LeftPanel() {
             </button>
           ))}
         </div>
-      </calcite-block>
+      </section>
     </div>
   );
 }

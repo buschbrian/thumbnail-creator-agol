@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Layer, Line, Rect, Stage, Transformer } from "react-konva";
 import type Konva from "konva";
 import { useEditorStore } from "../state/store";
@@ -8,6 +8,13 @@ import { LayerNode } from "./LayerNode";
 
 const SNAP_THRESHOLD_PX = 6;
 const ACCENT = "#0079c1";
+const MIN_ZOOM = 0.1;
+const MAX_ZOOM = 4;
+const ZOOM_STEP = 1.25;
+
+function clampZoom(value: number): number {
+  return Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, value));
+}
 
 export function EditorCanvas() {
   const doc = useEditorStore((s) => s.doc);
@@ -22,7 +29,9 @@ export function EditorCanvas() {
   const snapVRef = useRef<Konva.Line>(null);
   const snapHRef = useRef<Konva.Line>(null);
 
-  const scale = useFitScale(wrapRef, doc.width, doc.height);
+  const fitScale = useFitScale(wrapRef, doc.width, doc.height);
+  const [zoom, setZoom] = useState<"fit" | number>("fit");
+  const scale = zoom === "fit" ? fitScale : zoom;
 
   useEffect(() => {
     const stage = stageLocalRef.current;
@@ -174,8 +183,40 @@ export function EditorCanvas() {
     };
   }, [scale, doc.width, doc.height]);
 
+  const isEmpty = layers.length === 0;
+
   return (
-    <div ref={wrapRef} className="canvas-wrap">
+    <div
+      ref={wrapRef}
+      className={`canvas-wrap${zoom === "fit" ? "" : " is-zoomed"}`}
+    >
+      {isEmpty ? (
+        <div className="canvas-empty">
+          <h2>Make your item stand out</h2>
+          <p>
+            Start with a template, then add a background photo and your title.
+          </p>
+          <div className="canvas-empty-actions">
+            <calcite-button
+              scale="s"
+              kind="brand"
+              onClick={() =>
+                useEditorStore.getState().applyTemplate("footer-dark")
+              }
+            >
+              Use a template
+            </calcite-button>
+            <calcite-button
+              scale="s"
+              appearance="outline-fill"
+              onClick={() => useEditorStore.getState().addText()}
+            >
+              Add title text
+            </calcite-button>
+          </div>
+        </div>
+      ) : null}
+
       <div
         className="canvas-frame"
         style={{
@@ -242,6 +283,50 @@ export function EditorCanvas() {
             />
           </Layer>
         </Stage>
+      </div>
+
+      <div className="zoom-pill" role="group" aria-label="Zoom controls">
+        <button
+          type="button"
+          className="icon-btn"
+          aria-label="Zoom out"
+          disabled={scale <= MIN_ZOOM + 0.001}
+          onClick={() =>
+            setZoom(clampZoom((zoom === "fit" ? fitScale : zoom) / ZOOM_STEP))
+          }
+        >
+          <svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true">
+            <path d="M3 8h10" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+          </svg>
+        </button>
+        <span className="zoom-value">{Math.round(scale * 100)}%</span>
+        <button
+          type="button"
+          className="icon-btn"
+          aria-label="Zoom in"
+          disabled={scale >= MAX_ZOOM - 0.001}
+          onClick={() =>
+            setZoom(clampZoom((zoom === "fit" ? fitScale : zoom) * ZOOM_STEP))
+          }
+        >
+          <svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true">
+            <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+          </svg>
+        </button>
+        <span className="zoom-sep" aria-hidden="true" />
+        <span className="zoom-dims">
+          {doc.width} × {doc.height}
+        </span>
+        {zoom !== "fit" ? (
+          <button
+            type="button"
+            className="fit-btn"
+            aria-label="Fit canvas to view"
+            onClick={() => setZoom("fit")}
+          >
+            Fit
+          </button>
+        ) : null}
       </div>
     </div>
   );

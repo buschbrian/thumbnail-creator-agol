@@ -9,16 +9,32 @@ export interface AlertItem {
   message: string;
 }
 
+export type RightTab = "layers" | "properties" | "export";
+
+export interface ExportSettings {
+  format: "png" | "jpeg";
+  quality: number;
+}
+
 let nextAlertId = 1;
 
 interface UIState {
   alerts: AlertItem[];
   pushAlert: (kind: AlertKind, title: string, message?: string) => void;
   dismissAlert: (id: number) => void;
+
+  rightTab: RightTab;
+  setRightTab: (tab: RightTab) => void;
+
   iconPickerOpen: boolean;
   replaceIconTargetId: string | null;
   openIconPicker: (replaceTargetId?: string | null) => void;
   closeIconPicker: () => void;
+
+  exportSettings: ExportSettings;
+  setExportSettings: (patch: Partial<ExportSettings>) => void;
+  exportBusy: boolean;
+  setExportBusy: (busy: boolean) => void;
 }
 
 export const useUIStore = create<UIState>((set, get) => ({
@@ -27,7 +43,7 @@ export const useUIStore = create<UIState>((set, get) => ({
   pushAlert: (kind, title, message = "") => {
     const id = nextAlertId++;
     set((state) => ({
-      alerts: [...state.alerts, { id, kind, title, message }],
+      alerts: [...state.alerts.slice(-3), { id, kind, title, message }],
     }));
     if (kind !== "danger") {
       setTimeout(() => get().dismissAlert(id), 6000);
@@ -37,11 +53,21 @@ export const useUIStore = create<UIState>((set, get) => ({
   dismissAlert: (id) =>
     set((state) => ({ alerts: state.alerts.filter((a) => a.id !== id) })),
 
+  rightTab: "layers",
+  setRightTab: (rightTab) => set({ rightTab }),
+
   iconPickerOpen: false,
   replaceIconTargetId: null,
 
   openIconPicker: (replaceTargetId = null) =>
     set({ iconPickerOpen: true, replaceIconTargetId: replaceTargetId }),
 
-  closeIconPicker: () => set({ iconPickerOpen: false, replaceIconTargetId: null }),
+  closeIconPicker: () =>
+    set({ iconPickerOpen: false, replaceIconTargetId: null }),
+
+  exportSettings: { format: "png", quality: 90 },
+  setExportSettings: (patch) =>
+    set((state) => ({ exportSettings: { ...state.exportSettings, ...patch } })),
+  exportBusy: false,
+  setExportBusy: (exportBusy) => set({ exportBusy }),
 }));

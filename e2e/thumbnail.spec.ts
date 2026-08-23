@@ -3,13 +3,14 @@ import { expect, test } from "@playwright/test";
 test("app shell renders with brand title", async ({ page }) => {
   await page.goto("/");
   await expect(page).toHaveTitle("ArcGIS Thumbnail Maker");
-  await expect(page.getByText("ArcGIS Thumbnail Maker").first()).toBeVisible();
+  await expect(page.getByText("Thumbnail Maker").first()).toBeVisible();
+  await expect(page.locator(".canvas-frame canvas").first()).toBeVisible();
 });
 
 test("adds text, applies a template, and exports a PNG", async ({ page }) => {
   await page.goto("/");
 
-  await page.getByRole("button", { name: "Text", exact: true }).click();
+  await page.getByRole("button", { name: "Add text layer" }).click();
   const canvas = page.locator(".canvas-frame canvas").first();
   await expect(canvas).toBeVisible();
 
@@ -21,7 +22,7 @@ test("adds text, applies a template, and exports a PNG", async ({ page }) => {
   await expect(page.locator("calcite-list-item")).toHaveCount(4);
 
   const downloadPromise = page.waitForEvent("download", { timeout: 30_000 });
-  await page.getByRole("button", { name: /Download PNG/ }).click();
+  await page.getByRole("button", { name: "Export", exact: true }).click();
   const download = await downloadPromise;
 
   expect(download.suggestedFilename()).toMatch(/my-thumbnail_600x400\.png$/);
