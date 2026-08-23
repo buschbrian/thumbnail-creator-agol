@@ -11,6 +11,8 @@ export interface AlertItem {
 
 export type RightTab = "layers" | "properties" | "export";
 
+export type LeftTab = "templates" | "elements" | "text" | "background";
+
 export interface ExportSettings {
   format: "png" | "jpeg";
   quality: number;
@@ -25,6 +27,9 @@ interface UIState {
 
   rightTab: RightTab;
   setRightTab: (tab: RightTab) => void;
+
+  leftTab: LeftTab;
+  setLeftTab: (tab: LeftTab) => void;
 
   iconPickerOpen: boolean;
   replaceIconTargetId: string | null;
@@ -55,6 +60,9 @@ export const useUIStore = create<UIState>((set, get) => ({
 
   rightTab: "layers",
   setRightTab: (rightTab) => set({ rightTab }),
+
+  leftTab: "templates",
+  setLeftTab: (leftTab) => set({ leftTab }),
 
   iconPickerOpen: false,
   replaceIconTargetId: null,

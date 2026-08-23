@@ -1,9 +1,10 @@
-import { useCallback } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { SIZE_PRESETS, matchingSizePreset } from "../presets/presets";
 import { useEditorStore, pauseHistory, resumeHistory } from "../state/store";
 import { useUIStore } from "../ui/uiStore";
-import { performExport } from "../export/exportNow";
 import { useDomEvents } from "../hooks/useDomEvents";
 import { useHistoryFlags } from "../hooks/useHistoryFlags";
+import { performExport } from "../export/exportNow";
 
 function BrandMark(): React.ReactElement {
   return (
@@ -15,11 +16,105 @@ function BrandMark(): React.ReactElement {
   );
 }
 
+function SizeMenu({ onClose }: { onClose: () => void }) {
+  const doc = useEditorStore((s) => s.doc);
+  const setSize = useEditorStore((s) => s.setSize);
+  const pushAlert = useUIStore((s) => s.pushAlert);
+  const [customWidth, setCustomWidth] = useState(String(doc.width));
+  const [customHeight, setCustomHeight] = useState(String(doc.height));
+
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const onPointerDown = (event: PointerEvent): void => {
+      if (!cardRef.current?.contains(event.target as Node)) onClose();
+    };
+    const onKeyDown = (event: KeyboardEvent): void => {
+      if (event.key === "Escape") onClose();
+    };
+    document.addEventListener("pointerdown", onPointerDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [onClose]);
+
+  const activePresetId = matchingSizePreset(doc.width, doc.height)?.id ?? "custom";
+
+  const widthRef = useDomEvents([
+    ["calciteInputNumberInput", (e) => setCustomWidth((e.target as HTMLInputElement).value)],
+  ]);
+  const heightRef = useDomEvents([
+    ["calciteInputNumberInput", (e) => setCustomHeight((e.target as HTMLInputElement).value)],
+  ]);
+
+  const applyCustom = (): void => {
+    const width = Math.round(Number(customWidth));
+    const height = Math.round(Number(customHeight));
+    if (
+      !Number.isFinite(width) ||
+      !Number.isFinite(height) ||
+      width < 50 ||
+      height < 50
+    ) {
+      pushAlert("warning", "Invalid size", "Use dimensions of at least 50 pixels.");
+      return;
+    }
+    if (width > 8000 || height > 8000) {
+      pushAlert("warning", "Very large canvas", "Keep dimensions at or below 8000 pixels.");
+      return;
+    }
+    setSize(width, height);
+    onClose();
+  };
+
+  return (
+    <div className="size-menu" ref={cardRef} role="dialog" aria-label="Canvas size">
+      {SIZE_PRESETS.map((preset) => (
+        <button
+          key={preset.id}
+          type="button"
+          className={`size-option${activePresetId === preset.id ? " is-active" : ""}`}
+          onClick={() => {
+            setSize(preset.width, preset.height);
+            onClose();
+          }}
+        >
+          <span className="size-option-name">{preset.label}</span>
+          <span className="size-option-dims">
+            {preset.width} × {preset.height}
+          </span>
+        </button>
+      ))}
+      <div className="size-menu-custom">
+        <calcite-input-number
+          ref={widthRef}
+          scale="s"
+          value={customWidth}
+          aria-label="Custom width in pixels"
+        />
+        <span aria-hidden="true">×</span>
+        <calcite-input-number
+          ref={heightRef}
+          scale="s"
+          value={customHeight}
+          aria-label="Custom height in pixels"
+        />
+        <calcite-button scale="s" appearance="outline-fill" onClick={applyCustom}>
+          Apply
+        </calcite-button>
+      </div>
+    </div>
+  );
+}
+
 export function TopBar() {
   const doc = useEditorStore((s) => s.doc);
   const flags = useHistoryFlags();
   const exportBusy = useUIStore((s) => s.exportBusy);
   const exportFormat = useUIStore((s) => s.exportSettings.format);
+  const [sizeOpen, setSizeOpen] = useState(false);
 
   const onInput = useCallback((event: Event) => {
     pauseHistory();
@@ -98,9 +193,20 @@ export function TopBar() {
           </button>
         </div>
 
-        <span className="size-chip" title="Canvas dimensions">
-          {doc.width} × {doc.height}
-        </span>
+        <div className="size-anchor">
+          <button
+            type="button"
+            className="size-chip"
+            aria-haspopup="dialog"
+            aria-expanded={sizeOpen}
+            aria-label={`Canvas size ${doc.width} by ${doc.height} pixels — change`}
+            title="Change canvas size"
+            onClick={() => setSizeOpen((open) => !open)}
+          >
+            {doc.width} × {doc.height}
+          </button>
+          {sizeOpen ? <SizeMenu onClose={() => setSizeOpen(false)} /> : null}
+        </div>
 
         <calcite-button
           kind="brand"

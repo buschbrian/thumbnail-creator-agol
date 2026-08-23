@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Layer, Line, Rect, Stage, Transformer } from "react-konva";
 import type Konva from "konva";
 import { useEditorStore } from "../state/store";
+import { useUIStore } from "../ui/uiStore";
 import { stageRef } from "./stageRef";
 import { useFitScale } from "./useFitScale";
 import { LayerNode } from "./LayerNode";
@@ -189,6 +190,17 @@ export function EditorCanvas() {
     <div
       ref={wrapRef}
       className={`canvas-wrap${zoom === "fit" ? "" : " is-zoomed"}`}
+      onDragOver={(event) => {
+        event.preventDefault();
+      }}
+      onDrop={(event) => {
+        event.preventDefault();
+        const file = event.dataTransfer.files?.[0];
+        if (!file || !file.type.startsWith("image/")) return;
+        const url = URL.createObjectURL(file);
+        useEditorStore.getState().setBackgroundImage(url);
+        useUIStore.getState().pushAlert("success", "Background added", file.name);
+      }}
     >
       {isEmpty ? (
         <div className="canvas-empty">

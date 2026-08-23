@@ -8,16 +8,24 @@ other preset) thumbnails without firing up a design tool.
 
 ## Features
 
+- **Canva-style editing surface** — icon rail (Templates / Elements / Text /
+  Canvas), drag-and-drop canvas with snapping, zoom controls, double-click to
+  edit, arrow-key nudging, and drop-an-image-to-set-background.
+- **AGOL item-type templates** — preloaded designs for Web maps, Feature
+  layers, Dashboards, Story maps, Apps, Scenes, Surveys and Datasets, plus
+  essential layouts. The gallery shows live-rendered previews and filters by
+  item type; templates set the item type used for alt text.
+- **Accessibility built in** — alt text is auto-generated from the design
+  (item type, title, composition), embedded into the exported file's metadata
+  (PNG `Description` / `Alt Text` chunks, JPEG `COM`), editable with an
+  override, and copyable for ArcGIS Online's item Alt Text field.
 - **Presets** — ArcGIS Online 600 × 400 (default), Square 400 × 400,
   High-res 1200 × 800, plus custom sizes (existing layers rescale).
-- **Background** — solid color picker or image upload with fill/fit/stretch.
-- **Elements** — text layers, logo upload, rectangles, and a searchable
-  picker with ~220 ArcGIS-style icons (Calcite UI Icons).
-- **Templates** — footer bands, accent sidebar, navy banner, corner chip;
-  one click applies a professional layout using your thumbnail title.
-- **Editing** — drag, resize, and rotate on canvas with center snap guides;
-  layer list with reorder, visibility, and delete; per-layer properties.
-- **Undo / redo** — full history of document changes (Ctrl+Z / Ctrl+Y).
+- **Elements** — styled text presets (heading, impact, label chip…), logo
+  upload, shapes, and a searchable picker with ~420 ArcGIS-style icons.
+- **Editing** — drag, resize, and rotate with center snap guides; layer list
+  with reorder, visibility, and delete; per-layer properties.
+- **Undo / redo** — full history (Ctrl+Z / Ctrl+Y), Ctrl+S to export.
 - **Export** — PNG (default) or JPEG with quality slider, rendered at exact
   pixel dimensions regardless of editor zoom. Guides and selection handles
   are never included. Warns on unusual sizes and extreme aspect ratios and

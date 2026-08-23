@@ -12,7 +12,7 @@ const INCLUDE_PATTERNS = [
   /^(map|layer|basemap|globe|world|pin|locator|compass|zoom|search|magnif)/,
   /^(gear|settings|user|users|group|people|person|contact)/,
   /^(chart|graph|data|table|database|server|cloud|code|browser|web|app)/,
-  /^(file|folder|description|application|dashboard|home|office|building|city|urban)/,
+  /^(file|folder|description|application|dashboard|home|office|building|city|urban|form|field)/,
   /^(road|highway|street|car|truck|bus|bicycle|walk|pedestrian|plane|airplane|airport|boat|ship|anchor|heli|drone|rail|train|ferry|traffic|navigation|direction)/,
   /^(tree|forest|leaf|plant|flower|garden|park|nature|seed|sprout|grass|animal|bird|fish|paw|dog|cat|horse|live|farm|agricultur|crop|wheat|tractor|bug|insect|deer|bear|wolf|turtle|egg)/,
   /^(mountain|terrain|hill|volcano|peak|cave|desert|water|drop|wave|river|lake|ocean|sea|beach|coast|rain|snow|sun|moon|cloud|storm|lightning|thunder|tornado|hurricane|umbrella|temperature|thermometer|wind|fog|hail)/,
@@ -29,7 +29,27 @@ const INCLUDE_PATTERNS = [
   /^(grid|tile|list|menu|ellipsis|grip)/,
 ];
 
-const MAX_ICONS = 220;
+const MAX_ICONS = 420;
+
+const PRIORITY_PATTERNS = [
+  /^map/, /^layer/, /^basemap/, /^chart/, /^graph/, /^application/, /^app/,
+  /^list/, /^table/, /^pin/, /^user/, /^people/, /^person/, /^dashboard/,
+  /^form/, /^database/, /^server/, /^code/, /^image/, /^globe/, /^compass/,
+  /^graph/, /^applications/,
+  /^gear/, /^cloud/, /^browser/, /^calendar/, /^book/, /^description/,
+  /^home/, /^search/, /^download/, /^upload/, /^star/, /^heart/, /^flag/,
+  /^bookmark/, /^camera/, /^phone/, /^email/, /^envelope/, /^link/, /^lock/,
+  /^key/, /^eye/, /^check/, /^plus/, /^trash/, /^clock/, /^water/, /^tree/,
+  /^mountain/, /^fire/, /^car$/, /^bus/, /^bicycle/, /^walk/, /^plane/,
+  /^boat/, /^city/, /^building/, /^school/, /^hospital/, /^bank/, /^money/,
+  /^shopping/, /^recycle/, /^power/, /^sun/, /^moon/, /^snow/, /^rain/,
+  /^animal/, /^bird/, /^fish/, /^farm/, /^crop/, /^road/, /^traffic/,
+  /^polygon/, /^measure/, /^legend/, /^ruler/, /^draw/, /^edit/, /^pen/,
+  /^ribbon/, /^award/, /^shield/, /^print/, /^share/, /^save/, /^folder/,
+  /^file/, /^grid/, /^apps/, /^menu/, /^group/, /^settings/, /^data/,
+  /^report/, /^time/, /^history/, /^contact/, /^address/, /^gallery/,
+  /^media/, /^video/, /^sound/, /^erase/, /^rotate/, /^move/, /^expand/,
+];
 
 function normalizePaths(value) {
   const raw = typeof value === "string" ? [value] : value;
@@ -44,13 +64,24 @@ function humanize(id) {
     .replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-const entries = Object.entries(iconsPackage)
+const allMatches = Object.entries(iconsPackage)
   .filter(([key]) => key.endsWith("16"))
   .map(([key, value]) => [key.slice(0, -2), value])
   .filter(([id]) => !EXCLUDE_PATTERN.test(id))
   .filter(([id]) => INCLUDE_PATTERNS.some((pattern) => pattern.test(id)))
-  .sort(([a], [b]) => a.localeCompare(b))
-  .slice(0, MAX_ICONS);
+  .sort(([a], [b]) => a.localeCompare(b));
+
+const priorityIds = new Set();
+for (const pattern of PRIORITY_PATTERNS) {
+  for (const [id] of allMatches) {
+    if (priorityIds.size >= 120) break;
+    if (!priorityIds.has(id) && pattern.test(id)) priorityIds.add(id);
+  }
+}
+
+const prioritized = allMatches.filter(([id]) => priorityIds.has(id));
+const rest = allMatches.filter(([id]) => !priorityIds.has(id));
+const entries = [...prioritized, ...rest].slice(0, MAX_ICONS);
 
 if (entries.length < 50) {
   console.error(

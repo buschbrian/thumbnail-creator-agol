@@ -3,6 +3,7 @@ import type Konva from "konva";
 import type { KonvaEventObject } from "konva/lib/Node";
 import { getFontCss } from "../constants";
 import { useEditorStore } from "../state/store";
+import { useUIStore } from "../ui/uiStore";
 import { findIcon } from "../icons/generated/iconData";
 import { useImage } from "./useImage";
 import type {
@@ -145,6 +146,11 @@ export function LayerNode({ layer }: { layer: Layer }) {
     updateLayer(id, { x: Math.round(pos.x), y: Math.round(pos.y) });
   };
 
+  const onEditRequest = (id: string): void => {
+    select(id);
+    useUIStore.getState().setRightTab("properties");
+  };
+
   if (layer.type === "backgroundImage") {
     return <BackgroundImageNode layer={layer} />;
   }
@@ -190,6 +196,8 @@ export function LayerNode({ layer }: { layer: Layer }) {
     draggable: true,
     onClick: () => select(layer.id),
     onTap: () => select(layer.id),
+    onDblClick: () => onEditRequest(layer.id),
+    onDblTap: () => onEditRequest(layer.id),
     onDragEnd: (event: KonvaEventObject<DragEvent>) =>
       onDragCommit(layer.id, { x: event.target.x(), y: event.target.y() }),
     onTransformEnd,

@@ -64,9 +64,15 @@ export interface DocumentSpec {
   width: number;
   height: number;
   title: string;
+  itemType?: string;
+  altTextOverride?: string;
 }
 
-export type LayerDraft = Omit<Layer, "id">;
+type DistributiveOmit<T, K extends PropertyKey> = T extends unknown
+  ? Omit<T, K>
+  : never;
+
+export type LayerDraft = DistributiveOmit<Layer, "id">;
 
 export interface ImageMeasurements {
   naturalWidth: number;

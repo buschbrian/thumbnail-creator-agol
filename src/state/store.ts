@@ -7,6 +7,8 @@ import type {
   Layer,
 } from "./types";
 import { findTemplate } from "../templates/templates";
+import { buildTextPreset } from "../templates/textPresets";
+import type { TextPresetKind } from "../templates/textPresets";
 
 export interface EditorState {
   doc: DocumentSpec;
@@ -16,10 +18,12 @@ export interface EditorState {
 
   setSize(width: number, height: number): void;
   setTitle(title: string): void;
+  setAltTextOverride(text: string): void;
   setBackgroundColor(color: string): void;
   setBackgroundImage(src: string): void;
   removeBackgroundImage(): void;
   addText(): string;
+  addTextPreset(kind: TextPresetKind): string;
   addLogo(src: string, naturalWidth: number, naturalHeight: number): string;
   addRectangle(): string;
   addIcon(iconId: string): string;
@@ -100,6 +104,9 @@ export const useEditorStore = create<EditorState>()(
 
       setTitle: (title) => set((state) => ({ doc: { ...state.doc, title } })),
 
+      setAltTextOverride: (altTextOverride) =>
+        set((state) => ({ doc: { ...state.doc, altTextOverride } })),
+
       setBackgroundColor: (backgroundColor) => set({ backgroundColor }),
 
       setBackgroundImage: (src) =>
@@ -159,6 +166,18 @@ export const useEditorStore = create<EditorState>()(
                 letterSpacing: 0,
               } as Layer,
             ],
+            selectedId: id,
+          };
+        });
+        return id;
+      },
+
+      addTextPreset: (kind) => {
+        const id = newId("text");
+        set((state) => {
+          const draft = buildTextPreset(kind, state.doc);
+          return {
+            layers: [...state.layers, { ...draft, id } as Layer],
             selectedId: id,
           };
         });
@@ -295,7 +314,11 @@ export const useEditorStore = create<EditorState>()(
           const layers = drafts.map(
             (draft) => ({ ...draft, id: newId() }) as Layer,
           );
-          return { layers, selectedId: null };
+          return {
+            layers,
+            selectedId: null,
+            doc: { ...state.doc, itemType: template.category },
+          };
         }),
     }),
     {

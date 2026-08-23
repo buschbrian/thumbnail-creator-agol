@@ -32,7 +32,12 @@ After changes: run lint, typecheck, test, and build. Keep all four green.
 
 - Layers are a discriminated union in `src/state/types.ts`; every new layer
   type must be handled in `LayerNode.tsx`, `PropertiesPanel.tsx`,
-  `LayersList.tsx`, and the store actions.
+  `LayersList.tsx`, and the store actions. `LayerDraft` (templates) is a
+  DISTRIBUTIVE omit — keep it that way or template switches stop narrowing.
+- Templates are split across `templates/templateKit.ts` (builders),
+  `templatesItemsA/B.ts` (AGOL item types) and `templatesEssentials.ts`;
+  `templates.ts` aggregates. Every template `iconId` must exist in the
+  generated icon catalog (enforced by `templates.test.ts`).
 - History only tracks `{ doc, backgroundColor, layers }`. During canvas drags
   the Konva node is mutated directly and committed once on dragend/transformend.
 - For live control edits use the pause/resume pattern: `pauseHistory()` before
@@ -41,6 +46,10 @@ After changes: run lint, typecheck, test, and build. Keep all four green.
   `"content"`. Guides, transformer, and snap lines live on the `"guides"`
   layer and are never exported. Never add UI chrome to the content layer.
 - The background fill rect lives inside the content layer (`id="bg-fill"`).
+- Accessibility: `export/altText.ts` generates alt text from doc+layers;
+  `export/metadata.ts` embeds it (PNG tEXt chunks / JPEG COM). `performExport`
+  in `exportNow.ts` is the single export path — TopBar, ExportPanel and
+  Ctrl+S all route through it.
 
 ## Calcite v5 gotchas
 

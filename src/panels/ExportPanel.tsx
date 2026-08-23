@@ -1,16 +1,22 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+import { useEditorStore } from "../state/store";
 import { useUIStore } from "../ui/uiStore";
 import { validateDimensions } from "./../export/validation";
 import { buildFilename } from "../export/filename";
 import { performExport } from "../export/exportNow";
-import { useEditorStore } from "../state/store";
+import { altTextHealth, resolveAltText } from "../export/altText";
 import { useDomEvents } from "../hooks/useDomEvents";
 
 export function ExportPanel() {
   const doc = useEditorStore((s) => s.doc);
+  const layers = useEditorStore((s) => s.layers);
+  const setAltTextOverride = useEditorStore((s) => s.setAltTextOverride);
   const exportSettings = useUIStore((s) => s.exportSettings);
   const setExportSettings = useUIStore((s) => s.setExportSettings);
   const exportBusy = useUIStore((s) => s.exportBusy);
+  const pushAlert = useUIStore((s) => s.pushAlert);
+
+  const [editingAlt, setEditingAlt] = useState(false);
 
   const { format, quality } = exportSettings;
   const extension = format === "png" ? "png" : "jpeg";
@@ -20,6 +26,10 @@ export function ExportPanel() {
     () => validateDimensions(doc.width, doc.height),
     [doc.width, doc.height],
   );
+
+  const effectiveAlt = resolveAltText(doc, layers);
+  const health = altTextHealth(effectiveAlt);
+  const isCustom = (doc.altTextOverride?.trim().length ?? 0) > 0;
 
   const formatRef = useDomEvents([
     [
@@ -40,6 +50,23 @@ export function ExportPanel() {
         }),
     ],
   ]);
+
+  const altAreaRef = useDomEvents([
+    [
+      "calciteTextAreaChange",
+      (event) =>
+        setAltTextOverride((event.target as HTMLTextAreaElement).value),
+    ],
+  ]);
+
+  const copyAlt = async (): Promise<void> => {
+    try {
+      await navigator.clipboard.writeText(effectiveAlt);
+      pushAlert("success", "Alt text copied", "Paste it into the item's Alt Text field.");
+    } catch {
+      pushAlert("danger", "Copy failed", "Select the text and copy manually.");
+    }
+  };
 
   return (
     <div className="properties-body">
@@ -75,6 +102,80 @@ export function ExportPanel() {
         </div>
       ) : null}
 
+      <div className="alt-block">
+        <div className="alt-head">
+          <span className="field-label">Alt text</span>
+          <span className={`alt-pill alt-${health.level}`}>
+            {health.level === "good"
+              ? "Auto"
+              : health.level === "long"
+                ? "Long"
+                : "Empty"}
+          </span>
+        </div>
+
+        {editingAlt ? (
+          <>
+            <calcite-text-area
+              ref={altAreaRef}
+              scale="s"
+              rows={4}
+              value={isCustom ? doc.altTextOverride : effectiveAlt}
+              aria-label="Alt text override"
+            />
+            <div className="alt-actions">
+              <calcite-button
+                scale="s"
+                appearance="transparent"
+                onClick={() => {
+                  setAltTextOverride("");
+                  setEditingAlt(false);
+                }}
+              >
+                Use auto
+              </calcite-button>
+              <calcite-button
+                scale="s"
+                appearance="outline-fill"
+                onClick={() => setEditingAlt(false)}
+              >
+                Done
+              </calcite-button>
+            </div>
+          </>
+        ) : (
+          <>
+            <p className="alt-preview">{effectiveAlt}</p>
+            <div className="alt-actions">
+              <calcite-button
+                scale="s"
+                appearance="transparent"
+                icon-start="copy"
+                onClick={() => void copyAlt()}
+              >
+                Copy
+              </calcite-button>
+              <calcite-button
+                scale="s"
+                appearance="transparent"
+                icon-start="pencil"
+                onClick={() => setEditingAlt(true)}
+              >
+                {isCustom ? "Edit" : "Override"}
+              </calcite-button>
+            </div>
+          </>
+        )}
+
+        <p className={`field-hint alt-hint-${health.level}`}>{health.hint}</p>
+        <p className="field-hint">
+          Embedded into the exported file automatically
+          {format === "png" ? " (PNG Description)" : " (JPEG comment)"}. Also
+          paste it into the item's <strong>Alt Text</strong> field in ArcGIS
+          Online.
+        </p>
+      </div>
+
       <div className="export-meta">
         <span className="field-label">File name</span>
         <code className="filename-preview">{filename}</code>
@@ -85,24 +186,14 @@ export function ExportPanel() {
           {warnings.map((warning) => (
             <li key={warning.code} className="warning-item">
               <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
-                <path
-                  d="M8 1.5 15 14H1z"
-                  fill="#ffb600"
-                  stroke="#b8860b"
-                  strokeWidth="0.6"
-                />
-                <path d="M8 6v4.2M8 12.1v.9" stroke="#4a3b00" strokeWidth="1.4" strokeLinecap="round" />
+                <path d="M8 1.5 15 14H1z" fill="#111111" opacity="0.85" />
+                <path d="M8 6v4.2M8 12.1v.9" stroke="#ffef99" strokeWidth="1.4" strokeLinecap="round" />
               </svg>
               {warning.message}
             </li>
           ))}
         </ul>
       ) : null}
-
-      <p className="field-hint">
-        Exports at exactly {doc.width} × {doc.height} pixels — editor zoom,
-        guides, and selection handles are never included.
-      </p>
 
       <calcite-button
         width="full"

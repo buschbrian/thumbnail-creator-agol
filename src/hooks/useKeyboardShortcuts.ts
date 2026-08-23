@@ -52,6 +52,26 @@ export function useKeyboardShortcuts(): void {
         return;
       }
 
+      if (
+        event.key.startsWith("Arrow") &&
+        !isTypingTarget(event) &&
+        store.selectedId
+      ) {
+        event.preventDefault();
+        const layer = store.layers.find((l) => l.id === store.selectedId);
+        if (!layer) return;
+        const step = event.shiftKey ? 10 : 1;
+        const dx =
+          event.key === "ArrowLeft" ? -step : event.key === "ArrowRight" ? step : 0;
+        const dy =
+          event.key === "ArrowUp" ? -step : event.key === "ArrowDown" ? step : 0;
+        store.updateLayer(layer.id, {
+          x: Math.round(layer.x + dx),
+          y: Math.round(layer.y + dy),
+        });
+        return;
+      }
+
       if (event.key === "Escape") {
         store.select(null);
       }
