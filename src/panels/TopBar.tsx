@@ -7,10 +7,10 @@ import { useHistoryFlags } from "../hooks/useHistoryFlags";
 
 function BrandMark(): React.ReactElement {
   return (
-    <svg width="24" height="24" viewBox="0 0 16 16" aria-hidden="true">
-      <rect width="16" height="16" rx="3" fill="#0079c1" />
-      <path d="M4 11V6.5L7 4l3 2.5h3V11z" fill="#ffffff" />
-      <circle cx="11.4" cy="4.6" r="1.15" fill="#ffb600" />
+    <svg width="26" height="26" viewBox="0 0 16 16" aria-hidden="true">
+      <rect width="16" height="16" rx="4" fill="#272625" />
+      <path d="M3.6 11.2V6.9L7 4.2l3.1 2.7h2.5v4.3z" fill="#ffffff" />
+      <circle cx="11.6" cy="4.9" r="1.25" fill="#e8400d" />
     </svg>
   );
 }

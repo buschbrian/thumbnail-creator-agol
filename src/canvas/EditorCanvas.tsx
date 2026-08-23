@@ -7,7 +7,7 @@ import { useFitScale } from "./useFitScale";
 import { LayerNode } from "./LayerNode";
 
 const SNAP_THRESHOLD_PX = 6;
-const ACCENT = "#0079c1";
+const ACCENT = "#e8400d";
 const MIN_ZOOM = 0.1;
 const MAX_ZOOM = 4;
 const ZOOM_STEP = 1.25;

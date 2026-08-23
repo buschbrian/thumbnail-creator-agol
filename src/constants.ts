@@ -1,9 +1,9 @@
 export const COLORS = {
-  accent: "#0079c1",
-  accentDark: "#004575",
-  ink: "#151515",
-  gray: "#4b4b4b",
-  light: "#f8f8f8",
+  accent: "#e8400d",
+  accentDark: "#10054d",
+  ink: "#272625",
+  gray: "#6d6c6b",
+  light: "#ecebea",
   white: "#ffffff",
 } as const;
 
@@ -31,4 +31,4 @@ export function getFontCss(fontId: string): string {
   return FONT_OPTIONS.find((f) => f.id === fontId)?.css ?? FONT_OPTIONS[0].css;
 }
 
-export const DEFAULT_BACKGROUND_COLOR = "#e8e8e8";
+export const DEFAULT_BACKGROUND_COLOR = "#efece7";
