@@ -11,7 +11,8 @@ export interface AlertItem {
 
 export type RightTab = "layers" | "properties" | "export";
 
-export type LeftTab = "templates" | "elements" | "text" | "background";
+export type LeftTab = "templates" | "brand" | "elements" | "text" | "background";
+
 
 export interface ExportSettings {
   format: "png" | "jpeg";
@@ -40,6 +41,10 @@ interface UIState {
   setExportSettings: (patch: Partial<ExportSettings>) => void;
   exportBusy: boolean;
   setExportBusy: (busy: boolean) => void;
+
+  generateOpen: boolean;
+  openGenerate: () => void;
+  closeGenerate: () => void;
 }
 
 export const useUIStore = create<UIState>((set, get) => ({
@@ -78,4 +83,8 @@ export const useUIStore = create<UIState>((set, get) => ({
     set((state) => ({ exportSettings: { ...state.exportSettings, ...patch } })),
   exportBusy: false,
   setExportBusy: (exportBusy) => set({ exportBusy }),
+
+  generateOpen: false,
+  openGenerate: () => set({ generateOpen: true }),
+  closeGenerate: () => set({ generateOpen: false }),
 }));

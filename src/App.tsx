@@ -14,6 +14,10 @@ const IconPickerModal = lazy(() =>
   import("./panels/IconPickerModal").then((m) => ({ default: m.IconPickerModal })),
 );
 
+const GenerateModal = lazy(() =>
+  import("./panels/GenerateModal").then((m) => ({ default: m.GenerateModal })),
+);
+
 const RIGHT_TABS: Record<RightTab, string> = {
   layers: "Layers",
   properties: "Style",
@@ -30,6 +34,23 @@ const LEFT_TABS: Array<{ id: LeftTab; label: string; glyph: React.ReactNode }> =
         <rect x="9.1" y="2.5" width="5.4" height="5.4" rx="1" fill="currentColor" opacity="0.45" />
         <rect x="1.5" y="9.1" width="5.4" height="4.4" rx="1" fill="currentColor" opacity="0.45" />
         <rect x="9.1" y="9.1" width="5.4" height="4.4" rx="1" fill="currentColor" />
+      </svg>
+    ),
+  },
+  {
+    id: "brand",
+    label: "Brand",
+    glyph: (
+      <svg viewBox="0 0 16 16" width="18" height="18" aria-hidden="true">
+        <path
+          d="M8 1.6c2.9 0 5.4 2.2 5.4 4.9 0 1.8-1.3 3-3 3h-1.2c-.6 0-1 .5-.8 1.1l.3.8c.3.9-.3 1.9-1.3 1.9C4.2 13.3 2.6 10.9 2.6 8 2.6 4.5 5 1.6 8 1.6z"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+        />
+        <circle cx="5.7" cy="7" r="1" fill="currentColor" />
+        <circle cx="8.2" cy="4.8" r="1" fill="currentColor" />
+        <circle cx="11" cy="6.6" r="1" fill="currentColor" />
       </svg>
     ),
   },
@@ -149,6 +170,7 @@ export function App() {
   useKeyboardShortcuts();
 
   const iconPickerOpen = useUIStore((s) => s.iconPickerOpen);
+  const generateOpen = useUIStore((s) => s.generateOpen);
 
   return (
     <>
@@ -181,6 +203,11 @@ export function App() {
       {iconPickerOpen ? (
         <Suspense fallback={null}>
           <IconPickerModal />
+        </Suspense>
+      ) : null}
+      {generateOpen ? (
+        <Suspense fallback={null}>
+          <GenerateModal />
         </Suspense>
       ) : null}
       <AlertHost />

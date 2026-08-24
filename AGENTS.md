@@ -79,9 +79,22 @@ Calcite Design System and Calcite UI Icons are © Esri under the Esri Master
 Agreement. Keep them as npm dependencies and derive assets at build time;
 do not vendor their code or icon path data into this repository.
 
+## Brand kit + ArcGIS fetch rules
+
+- The brand kit (`src/brand/`) lives OUTSIDE editor history — never add it to
+  the zundo `partialize`. It persists via zustand `persist` to localStorage
+  (key `thumbnail-maker.brandkit.v1`); this is the ONLY allowed persistence.
+- Logos stored in the brand kit must be data URLs (downscaled via canvas),
+  never blob object URLs — object URLs die on reload.
+- `src/agol/` performs client-side ANONYMOUS PUBLIC READS of ArcGIS item and
+  service metadata (`?f=pjson`). No tokens, no auth, no writes. Remote
+  thumbnail images MUST be re-fetched as blobs before use as layers so the
+  export canvas is never tainted.
+
 ## Do not
 
-- Do not add a backend, auth, AGOL API integration, or persistence.
+- Do not add a backend or auth; do not persist anything beyond the brand kit
+  localStorage entry above.
 - Do not replace Calcite with another design system.
 - Do not break export correctness: exported pixels must equal document size
   exactly, with no editor chrome.

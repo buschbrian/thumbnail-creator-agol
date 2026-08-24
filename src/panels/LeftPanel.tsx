@@ -4,20 +4,12 @@ import { useUIStore } from "../ui/uiStore";
 import { useDomEvents } from "../hooks/useDomEvents";
 import { ColorSwatch } from "./ColorSwatch";
 import { TemplateGallery } from "./TemplateGallery";
+import { PaletteRow } from "./PaletteRow";
+import { BrandPanel } from "./BrandPanel";
+import { useBrandStore } from "../brand/brandStore";
 import { ICON_CATALOG } from "../icons/generated/iconData";
 import { TEXT_PRESETS } from "../templates/textPresets";
 import type { FitMode } from "../state/types";
-
-const QUICK_PALETTE = [
-  "#ffffff",
-  "#f6f5f3",
-  "#272625",
-  "#10054d",
-  "#e8400d",
-  "#ffd7f0",
-  "#b7efb2",
-  "#ffef99",
-];
 
 const QUICK_ICONS = [
   "map",
@@ -58,10 +50,16 @@ function TemplatesTab() {
   return <TemplateGallery />;
 }
 
+function BrandTab() {
+  return <BrandPanel />;
+}
+
 function ElementsTab() {
   const addRectangle = useEditorStore((s) => s.addRectangle);
   const addIcon = useEditorStore((s) => s.addIcon);
   const openIconPicker = useUIStore((s) => s.openIconPicker);
+  const brandLogo = useBrandStore((s) => s.logo);
+  const brandName = useBrandStore((s) => s.name);
   const logoFileRef = useRef<HTMLInputElement>(null);
 
   const onLogoUpload = useCallback(
@@ -125,6 +123,29 @@ function ElementsTab() {
           Icons…
         </button>
       </div>
+      {brandLogo ? (
+        <div className="add-grid add-grid-loose brand-logo-tile-row">
+          <button
+            type="button"
+            className="add-tile add-tile-brand"
+            aria-label="Add brand logo to canvas"
+            title={`${brandName || "Brand"} logo`}
+            onClick={() =>
+              useEditorStore
+                .getState()
+                .addLogo(brandLogo.src, brandLogo.width, brandLogo.height)
+            }
+          >
+            <img
+              src={brandLogo.src}
+              alt=""
+              height={18}
+              style={{ width: "auto", maxWidth: 28, objectFit: "contain" }}
+            />
+            Brand logo
+          </button>
+        </div>
+      ) : null}
       <input
         ref={logoFileRef}
         type="file"
@@ -246,18 +267,11 @@ function BackgroundTab() {
         value={backgroundColor}
         onCommit={(hex) => useEditorStore.getState().setBackgroundColor(hex)}
       />
-      <div className="palette-row" role="group" aria-label="Quick background colors">
-        {QUICK_PALETTE.map((hex) => (
-          <button
-            key={hex}
-            type="button"
-            className={`palette-dot${backgroundColor.toLowerCase() === hex.toLowerCase() ? " is-active" : ""}`}
-            style={{ background: hex }}
-            aria-label={`Set background to ${hex}`}
-            onClick={() => useEditorStore.getState().setBackgroundColor(hex)}
-          />
-        ))}
-      </div>
+      <PaletteRow
+        ariaLabel="Quick background colors"
+        value={backgroundColor}
+        onCommit={(hex) => useEditorStore.getState().setBackgroundColor(hex)}
+      />
 
       <h3 className="section-title section-title-gap">Photo</h3>
       <input
@@ -321,6 +335,7 @@ export function LeftPanel() {
   return (
     <div className="rail-content">
       {leftTab === "templates" ? <TemplatesTab /> : null}
+      {leftTab === "brand" ? <BrandTab /> : null}
       {leftTab === "elements" ? <ElementsTab /> : null}
       {leftTab === "text" ? <TextTab /> : null}
       {leftTab === "background" ? <BackgroundTab /> : null}

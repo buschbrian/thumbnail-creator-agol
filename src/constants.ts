@@ -32,3 +32,14 @@ export function getFontCss(fontId: string): string {
 }
 
 export const DEFAULT_BACKGROUND_COLOR = "#efece7";
+
+export const QUICK_PALETTE: readonly string[] = [
+  "#ffffff",
+  "#f6f5f3",
+  "#272625",
+  "#10054d",
+  "#e8400d",
+  "#ffd7f0",
+  "#b7efb2",
+  "#ffef99",
+];

@@ -209,6 +209,16 @@ export function TopBar() {
         </div>
 
         <calcite-button
+          scale="s"
+          appearance="outline-fill"
+          icon-start="link"
+          aria-label="Generate a thumbnail from an ArcGIS item or service URL"
+          onClick={() => useUIStore.getState().openGenerate()}
+        >
+          From URL
+        </calcite-button>
+
+        <calcite-button
           kind="brand"
           scale="s"
           icon-start="download"

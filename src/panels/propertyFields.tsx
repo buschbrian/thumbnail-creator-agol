@@ -1,6 +1,7 @@
 import { useCallback } from "react";
 import { useDomEvents } from "../hooks/useDomEvents";
 import { ColorSwatch } from "./ColorSwatch";
+import { PaletteRow } from "./PaletteRow";
 
 export interface PatchTools {
   live: (patch: Record<string, unknown>) => void;
@@ -119,6 +120,7 @@ export function ColorField({
         onLive={onLive}
         onCommit={onCommit}
       />
+      <PaletteRow ariaLabel={`${label} quick colors`} value={value} onCommit={onCommit} />
     </Field>
   );
 }

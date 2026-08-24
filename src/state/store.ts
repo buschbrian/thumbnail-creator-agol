@@ -19,6 +19,7 @@ export interface EditorState {
   setSize(width: number, height: number): void;
   setTitle(title: string): void;
   setAltTextOverride(text: string): void;
+  setItemType(itemType?: string): void;
   setBackgroundColor(color: string): void;
   setBackgroundImage(src: string): void;
   removeBackgroundImage(): void;
@@ -106,6 +107,9 @@ export const useEditorStore = create<EditorState>()(
 
       setAltTextOverride: (altTextOverride) =>
         set((state) => ({ doc: { ...state.doc, altTextOverride } })),
+
+      setItemType: (itemType) =>
+        set((state) => ({ doc: { ...state.doc, itemType } })),
 
       setBackgroundColor: (backgroundColor) => set({ backgroundColor }),
 
