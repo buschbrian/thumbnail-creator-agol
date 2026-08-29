@@ -159,7 +159,7 @@ export function BrandPanel() {
   }, [confirmClear]);
 
   return (
-    <div className="tab-body">
+    <div className="tab-body brand-panel">
       <h3 className="section-title">
         Organization brand
         <span className="section-hint">saved automatically</span>
@@ -186,7 +186,7 @@ export function BrandPanel() {
           </small>
         </div>
       ) : null}
-      <div className="field-row">
+      <div className="field-row brand-action-stack">
         <input
           ref={logoFileRef}
           type="file"
@@ -354,7 +354,7 @@ export function BrandPanel() {
       )}
 
       <h3 className="section-title section-title-gap">Share kit</h3>
-      <div className="field-row">
+      <div className="field-row brand-action-stack">
         <calcite-button
           scale="s"
           appearance="outline-fill"
@@ -368,6 +368,7 @@ export function BrandPanel() {
         <calcite-button
           scale="s"
           kind="danger"
+          width="full"
           appearance={confirmClear ? "solid" : "transparent"}
           onClick={onClearAll}
         >

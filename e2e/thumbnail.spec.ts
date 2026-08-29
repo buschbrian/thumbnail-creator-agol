@@ -47,3 +47,41 @@ test("export panel shows generated alt text", async ({ page }) => {
     'item "My thumbnail"',
   );
 });
+
+for (const viewport of [
+  { width: 1024, height: 768 },
+  { width: 1280, height: 720 },
+]) {
+  test(`brand workspace fits without horizontal overflow at ${viewport.width}x${viewport.height}`, async ({
+    page,
+  }) => {
+    await page.setViewportSize(viewport);
+    await page.goto("/");
+    await page.getByRole("button", { name: "Brand" }).click();
+
+    const panel = page.locator(".rail-content");
+    await expect(
+      page.getByRole("heading", { name: /Organization brand/ }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("radiogroup", { name: "Import mode" }),
+    ).toBeVisible();
+
+    const dimensions = await panel.evaluate((element) => ({
+      clientWidth: element.clientWidth,
+      scrollWidth: element.scrollWidth,
+    }));
+    expect(dimensions.scrollWidth).toBeLessThanOrEqual(dimensions.clientWidth);
+
+    const shareKit = page.getByRole("heading", { name: "Share kit" });
+    await shareKit.scrollIntoViewIfNeeded();
+    await expect(shareKit).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: "Export .brandkit.json" }),
+    ).toBeVisible();
+
+    const clearAll = page.getByRole("button", { name: "Clear all" });
+    await clearAll.click();
+    await expect(page.getByRole("button", { name: "Confirm?" })).toBeVisible();
+  });
+}

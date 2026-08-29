@@ -1,4 +1,8 @@
 import { beforeEach, describe, expect, it } from "vitest";
+import {
+  createDesignSnapshot,
+  designStateFromSnapshot,
+} from "../project/schema";
 import { resetEditorForTests, useEditorStore } from "./store";
 
 describe("editor store", () => {
@@ -88,5 +92,27 @@ describe("editor store", () => {
     const temporal = useEditorStore.temporal.getState();
     temporal.undo();
     expect(useEditorStore.getState().layers).toHaveLength(0);
+  });
+
+  it("converts editor state through a detached snapshot without changing history", () => {
+    useEditorStore.getState().addText();
+    const before = useEditorStore.getState();
+
+    const snapshot = createDesignSnapshot(before);
+    const restored = designStateFromSnapshot(snapshot);
+
+    expect(restored).toEqual({
+      doc: before.doc,
+      backgroundColor: before.backgroundColor,
+      layers: before.layers,
+    });
+    restored.layers[0].name = "Detached copy";
+    expect(useEditorStore.getState().layers[0].name).toBe("Text");
+
+    const temporal = useEditorStore.temporal.getState();
+    temporal.undo();
+    expect(useEditorStore.getState().layers).toHaveLength(0);
+    temporal.redo();
+    expect(useEditorStore.getState().layers).toHaveLength(1);
   });
 });

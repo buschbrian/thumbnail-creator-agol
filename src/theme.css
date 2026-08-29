@@ -1340,6 +1340,35 @@ body {
 
 /* ---------------- Brand panel ---------------- */
 
+.brand-panel {
+  min-width: 0;
+}
+
+.brand-panel .section-title {
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 0.2rem 0.45rem;
+  justify-content: flex-start;
+}
+
+.brand-panel .section-hint {
+  flex: 1 1 100%;
+}
+
+.brand-action-stack {
+  align-items: stretch;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.brand-panel calcite-input-text,
+.brand-panel calcite-segmented-control,
+.brand-panel calcite-text-area,
+.brand-panel calcite-button {
+  max-width: 100%;
+  min-width: 0;
+}
+
 .brand-logo-preview {
   display: flex;
   align-items: center;
@@ -1373,6 +1402,7 @@ body {
 }
 
 .brand-paste {
+  --calcite-text-area-min-width: 0px;
   margin-top: 0.55rem;
   width: 100%;
   min-height: 74px;

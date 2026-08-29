@@ -3,6 +3,7 @@ import { temporal } from "zundo";
 import { newId } from "./id";
 import { COLORS, DEFAULT_BACKGROUND_COLOR } from "../constants";
 import type {
+  DesignState,
   DocumentSpec,
   Layer,
 } from "./types";
@@ -35,11 +36,7 @@ export interface EditorState {
   applyTemplate(templateId: string): void;
 }
 
-interface HistorySlice {
-  doc: DocumentSpec;
-  backgroundColor: string;
-  layers: Layer[];
-}
+type HistorySlice = DesignState;
 
 export function createBlankState(): HistorySlice & { selectedId: string | null } {
   return {

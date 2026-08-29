@@ -68,6 +68,13 @@ export interface DocumentSpec {
   altTextOverride?: string;
 }
 
+/** The complete design data tracked by editor history and portable snapshots. */
+export interface DesignState {
+  doc: DocumentSpec;
+  backgroundColor: string;
+  layers: Layer[];
+}
+
 type DistributiveOmit<T, K extends PropertyKey> = T extends unknown
   ? Omit<T, K>
   : never;
