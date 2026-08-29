@@ -126,7 +126,7 @@ files are recorded in [`tasks/todo.md`](./todo.md).
 
 - [x] T01 Fix the left Brand panel’s responsive overflow
 - [x] T02 Introduce the versioned `DesignSnapshot` contract
-- [ ] T03 Export a portable project with embedded image assets
+- [x] T03 Export a portable project with embedded image assets
 - [ ] T04 Import and validate a portable project
 - [ ] T05 Protect edited designs from destructive replacement
 

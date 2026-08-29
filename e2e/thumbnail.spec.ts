@@ -48,6 +48,44 @@ test("export panel shows generated alt text", async ({ page }) => {
   );
 });
 
+test("downloads an editable project with embedded local images and unchanged history", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Canvas", exact: true }).click();
+  await page.locator('.tab-body input[type="file"]').setInputFiles({
+    name: "trail-background.png",
+    mimeType: "image/png",
+    buffer: Buffer.from(
+      "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=",
+      "base64",
+    ),
+  });
+  await expect(page.locator("calcite-list-item")).toHaveCount(1);
+
+  const downloadPromise = page.waitForEvent("download");
+  await page
+    .getByRole("button", { name: "Download editable project" })
+    .click();
+  const download = await downloadPromise;
+
+  expect(download.suggestedFilename()).toBe("my-thumbnail.thumbnail.json");
+  const path = await download.path();
+  const json = readFileSync(path, "utf8");
+  const project = JSON.parse(json) as {
+    format: string;
+    version: number;
+    layers: Array<{ src?: string }>;
+  };
+  expect(project.format).toBe("thumbnail-maker-design");
+  expect(project.version).toBe(1);
+  expect(json).not.toContain("blob:");
+  expect(project.layers[0].src).toMatch(/^data:image\/png;base64,/);
+
+  await page.getByRole("button", { name: "Undo (Ctrl+Z)" }).click();
+  await expect(page.locator("calcite-list-item")).toHaveCount(0);
+});
+
 for (const viewport of [
   { width: 1024, height: 768 },
   { width: 1280, height: 720 },

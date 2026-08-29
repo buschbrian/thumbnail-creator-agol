@@ -70,14 +70,14 @@ files, template packs, variations, and batch operations.
 blob-backed images into portable data URLs at the file boundary.
 
 **Acceptance criteria:**
-- [ ] Project export includes the versioned snapshot and no `blob:` URLs.
-- [ ] PNG/JPEG foreground, logo, and background assets survive serialization.
-- [ ] Oversized assets produce a clear warning before download rather than silently failing.
+- [x] Project export includes the versioned snapshot and no `blob:` URLs.
+- [x] PNG/JPEG foreground, logo, and background assets survive serialization.
+- [x] Oversized assets produce a clear warning before download rather than silently failing.
 
 **Verification:**
-- [ ] `npm test -- src/project/exportProject.test.ts`
-- [ ] `npm run typecheck`
-- [ ] Manual project download contains no object URL and does not alter editor state/history.
+- [x] `npm test -- src/project/exportProject.test.ts`
+- [x] `npm run typecheck`
+- [x] Manual project download contains no object URL and does not alter editor state/history.
 
 **Dependencies:** T02
 

@@ -5,6 +5,11 @@ import { useUIStore } from "../ui/uiStore";
 import { useDomEvents } from "../hooks/useDomEvents";
 import { useHistoryFlags } from "../hooks/useHistoryFlags";
 import { performExport } from "../export/exportNow";
+import {
+  downloadPreparedProject,
+  prepareProjectExport,
+  type PreparedProjectExport,
+} from "../project/exportProject";
 
 function BrandMark(): React.ReactElement {
   return (
@@ -115,6 +120,9 @@ export function TopBar() {
   const exportBusy = useUIStore((s) => s.exportBusy);
   const exportFormat = useUIStore((s) => s.exportSettings.format);
   const [sizeOpen, setSizeOpen] = useState(false);
+  const [projectBusy, setProjectBusy] = useState(false);
+  const [pendingProject, setPendingProject] =
+    useState<PreparedProjectExport | null>(null);
 
   const onInput = useCallback((event: Event) => {
     pauseHistory();
@@ -132,103 +140,190 @@ export function TopBar() {
     ["calciteInputTextInput", onInput],
     ["calciteInputTextChange", onChange],
   ]);
+  const warningDialogRef = useDomEvents([
+    ["calciteDialogClose", () => setPendingProject(null)],
+  ]);
+
+  const saveProject = useCallback(async (): Promise<void> => {
+    if (projectBusy) return;
+    setProjectBusy(true);
+    const ui = useUIStore.getState();
+    const editor = useEditorStore.getState();
+    try {
+      const prepared = await prepareProjectExport({
+        doc: editor.doc,
+        backgroundColor: editor.backgroundColor,
+        layers: editor.layers,
+      });
+      if (prepared.warnings.length > 0) {
+        setPendingProject(prepared);
+        return;
+      }
+      downloadPreparedProject(prepared);
+      ui.pushAlert("success", "Editable project saved", prepared.filename);
+    } catch (error) {
+      ui.pushAlert("danger", "Project save failed", (error as Error).message);
+    } finally {
+      setProjectBusy(false);
+    }
+  }, [projectBusy]);
+
+  const confirmLargeProject = (): void => {
+    if (!pendingProject) return;
+    try {
+      downloadPreparedProject(pendingProject, { acceptWarnings: true });
+      useUIStore
+        .getState()
+        .pushAlert("success", "Editable project saved", pendingProject.filename);
+    } catch (error) {
+      useUIStore
+        .getState()
+        .pushAlert("danger", "Project save failed", (error as Error).message);
+    } finally {
+      setPendingProject(null);
+    }
+  };
 
   return (
-    <div className="topbar">
-      <div className="brand">
-        <BrandMark />
-        <span className="brand-name">Thumbnail Maker</span>
-        <span className="brand-scope">for ArcGIS Online</span>
-      </div>
-
-      <calcite-input-text
-        ref={titleRef}
-        className="title-input"
-        placeholder="Untitled thumbnail"
-        aria-label="Thumbnail title used for the export filename"
-        value={doc.title}
-        scale="s"
-        max-length={80}
-      />
-
-      <div className="topbar-actions">
-        <div className="history-cluster" role="group" aria-label="History">
-          <button
-            type="button"
-            className="icon-btn"
-            aria-label="Undo (Ctrl+Z)"
-            title="Undo (Ctrl+Z)"
-            disabled={!flags.canUndo}
-            onClick={() => useEditorStore.temporal.getState().undo()}
-          >
-            <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true">
-              <path
-                d="M6 3.5 2.5 7 6 10.5M2.5 7H10a3.5 3.5 0 0 1 0 7H7"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button>
-          <button
-            type="button"
-            className="icon-btn"
-            aria-label="Redo (Ctrl+Y)"
-            title="Redo (Ctrl+Y)"
-            disabled={!flags.canRedo}
-            onClick={() => useEditorStore.temporal.getState().redo()}
-          >
-            <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true">
-              <path
-                d="M10 3.5 13.5 7 10 10.5M13.5 7H6a3.5 3.5 0 0 0 0 7h3"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button>
+    <>
+      <div className="topbar">
+        <div className="brand">
+          <BrandMark />
+          <span className="brand-name">Thumbnail Maker</span>
+          <span className="brand-scope">for ArcGIS Online</span>
         </div>
 
-        <div className="size-anchor">
-          <button
-            type="button"
-            className="size-chip"
-            aria-haspopup="dialog"
-            aria-expanded={sizeOpen}
-            aria-label={`Canvas size ${doc.width} by ${doc.height} pixels — change`}
-            title="Change canvas size"
-            onClick={() => setSizeOpen((open) => !open)}
+        <calcite-input-text
+          ref={titleRef}
+          className="title-input"
+          placeholder="Untitled thumbnail"
+          aria-label="Thumbnail title used for the export filename"
+          value={doc.title}
+          scale="s"
+          max-length={80}
+        />
+
+        <div className="topbar-actions">
+          <div className="history-cluster" role="group" aria-label="History">
+            <button
+              type="button"
+              className="icon-btn"
+              aria-label="Undo (Ctrl+Z)"
+              title="Undo (Ctrl+Z)"
+              disabled={!flags.canUndo}
+              onClick={() => useEditorStore.temporal.getState().undo()}
+            >
+              <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true">
+                <path
+                  d="M6 3.5 2.5 7 6 10.5M2.5 7H10a3.5 3.5 0 0 1 0 7H7"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </button>
+            <button
+              type="button"
+              className="icon-btn"
+              aria-label="Redo (Ctrl+Y)"
+              title="Redo (Ctrl+Y)"
+              disabled={!flags.canRedo}
+              onClick={() => useEditorStore.temporal.getState().redo()}
+            >
+              <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true">
+                <path
+                  d="M10 3.5 13.5 7 10 10.5M13.5 7H6a3.5 3.5 0 0 0 0 7h3"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </button>
+          </div>
+
+          <div className="size-anchor">
+            <button
+              type="button"
+              className="size-chip"
+              aria-haspopup="dialog"
+              aria-expanded={sizeOpen}
+              aria-label={`Canvas size ${doc.width} by ${doc.height} pixels — change`}
+              title="Change canvas size"
+              onClick={() => setSizeOpen((open) => !open)}
+            >
+              {doc.width} × {doc.height}
+            </button>
+            {sizeOpen ? <SizeMenu onClose={() => setSizeOpen(false)} /> : null}
+          </div>
+
+          <calcite-button
+            scale="s"
+            appearance="transparent"
+            icon-start="save"
+            loading={projectBusy}
+            aria-label="Download editable project"
+            title="Download editable project"
+            onClick={() => void saveProject()}
           >
-            {doc.width} × {doc.height}
-          </button>
-          {sizeOpen ? <SizeMenu onClose={() => setSizeOpen(false)} /> : null}
+            <span className="sr-only">Download editable project</span>
+          </calcite-button>
+
+          <calcite-button
+            scale="s"
+            appearance="outline-fill"
+            icon-start="link"
+            aria-label="Generate a thumbnail from an ArcGIS item or service URL"
+            onClick={() => useUIStore.getState().openGenerate()}
+          >
+            From URL
+          </calcite-button>
+
+          <calcite-button
+            kind="brand"
+            scale="s"
+            icon-start="download"
+            loading={exportBusy}
+            aria-label={`Export ${exportFormat.toUpperCase()} thumbnail`}
+            onClick={() => void performExport()}
+          >
+            Export
+          </calcite-button>
         </div>
-
-        <calcite-button
-          scale="s"
-          appearance="outline-fill"
-          icon-start="link"
-          aria-label="Generate a thumbnail from an ArcGIS item or service URL"
-          onClick={() => useUIStore.getState().openGenerate()}
-        >
-          From URL
-        </calcite-button>
-
-        <calcite-button
-          kind="brand"
-          scale="s"
-          icon-start="download"
-          loading={exportBusy}
-          aria-label={`Export ${exportFormat.toUpperCase()} thumbnail`}
-          onClick={() => void performExport()}
-        >
-          Export
-        </calcite-button>
       </div>
-    </div>
+
+      {pendingProject ? (
+        <calcite-dialog
+          ref={warningDialogRef}
+          open
+          heading="Large editable project"
+          description="Review before downloading"
+          modal
+          width-scale="s"
+        >
+          <calcite-notice kind="warning" open icon-start="exclamation-mark-triangle">
+            <div slot="message">{pendingProject.warnings[0].message}</div>
+          </calcite-notice>
+          <calcite-button
+            slot="footer-start"
+            appearance="transparent"
+            onClick={() => setPendingProject(null)}
+          >
+            Cancel
+          </calcite-button>
+          <calcite-button
+            slot="footer-end"
+            kind="brand"
+            icon-start="download"
+            onClick={confirmLargeProject}
+          >
+            Download anyway
+          </calcite-button>
+        </calcite-dialog>
+      ) : null}
+    </>
   );
 }

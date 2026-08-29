@@ -30,6 +30,9 @@ other preset) thumbnails without firing up a design tool.
   pixel dimensions regardless of editor zoom. Guides and selection handles
   are never included. Warns on unusual sizes and extreme aspect ratios and
   suggests a sensible filename (`my-map-title_600x400.png`).
+- **Editable project download** — saves a validated, versioned
+  `.thumbnail.json` file with local PNG/JPEG/WebP assets embedded for
+  portability. Large project files require confirmation before download.
 
 ## Getting started
 
@@ -100,6 +103,7 @@ src/
   icons/       generated icon catalog (from @esri/calcite-ui-icons)
   panels/      left controls, layers/properties/export panels, dialogs
   presets/     size presets
+  project/     portable project schema, asset codec, and file operations
   state/       Zustand store, layer types, undo/redo
   templates/   template definitions (layer factories)
 scripts/       asset copying (postinstall) + icon catalog generation
