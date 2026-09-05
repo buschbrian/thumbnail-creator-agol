@@ -61,7 +61,7 @@ function dedupe(
 ): ParsedColor[] {
   const added: ParsedColor[] = [];
   for (const color of incoming) {
-    if (added.length + existingHexes.size >= MAX_BRAND_COLORS) break;
+    if (existingHexes.size >= MAX_BRAND_COLORS) break;
     const hex = color.hex.toLowerCase();
     if (existingHexes.has(hex)) continue;
     existingHexes.add(hex);

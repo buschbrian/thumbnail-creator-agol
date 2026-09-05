@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { resetBrandForTests, useBrandStore } from "./brandStore";
+import { MAX_BRAND_COLORS } from "./types";
 
 describe("brand store", () => {
   beforeEach(() => {
@@ -51,6 +52,23 @@ describe("brand store", () => {
     expect(useBrandStore.getState().colors).toHaveLength(0);
     expect(useBrandStore.getState().logo).toBeNull();
   });
+
+  it.each(["replace", "append"] as const)(
+    "%s fills the palette to its limit without counting new colors twice",
+    (mode) => {
+      const colors = Array.from({ length: MAX_BRAND_COLORS + 1 }, (_, index) => ({
+        hex: `#${index.toString(16).padStart(6, "0")}`,
+      }));
+      const existing = colors.slice(0, 10);
+      useBrandStore.getState().importColors(existing, "replace");
+
+      const added = useBrandStore.getState().importColors(colors, mode);
+
+      expect(added).toBe(MAX_BRAND_COLORS - (mode === "append" ? existing.length : 0));
+      expect(useBrandStore.getState().colors).toEqual(colors.slice(0, MAX_BRAND_COLORS));
+      expect(useBrandStore.getState().importColors(colors, "append")).toBe(0);
+    },
+  );
 
   it("setLogo stores data URLs and can clear them", () => {
     useBrandStore
