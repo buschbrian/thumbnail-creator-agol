@@ -1,13 +1,6 @@
 import { useUIStore } from "../ui/uiStore";
 import { useDomEvents } from "../hooks/useDomEvents";
-import type { AlertItem, AlertKind } from "../ui/uiStore";
-
-const KIND_MAP: Record<AlertKind, "brand" | "danger" | "info" | "success" | "warning"> = {
-  info: "info",
-  success: "success",
-  warning: "warning",
-  danger: "danger",
-};
+import type { AlertItem } from "../ui/uiStore";
 
 function Toast({ alert }: { alert: AlertItem }) {
   const dismissAlert = useUIStore((s) => s.dismissAlert);
@@ -18,7 +11,7 @@ function Toast({ alert }: { alert: AlertItem }) {
       ref={ref}
       open
       scale="s"
-      kind={KIND_MAP[alert.kind]}
+      kind={alert.kind}
       icon
       label={alert.title}
     >

@@ -46,14 +46,6 @@ function readFileAsImage(
   });
 }
 
-function TemplatesTab() {
-  return <TemplateGallery />;
-}
-
-function BrandTab() {
-  return <BrandPanel />;
-}
-
 function ElementsTab() {
   const addRectangle = useEditorStore((s) => s.addRectangle);
   const addIcon = useEditorStore((s) => s.addIcon);
@@ -334,8 +326,8 @@ export function LeftPanel() {
 
   return (
     <div className="rail-content">
-      {leftTab === "templates" ? <TemplatesTab /> : null}
-      {leftTab === "brand" ? <BrandTab /> : null}
+      {leftTab === "templates" ? <TemplateGallery /> : null}
+      {leftTab === "brand" ? <BrandPanel /> : null}
       {leftTab === "elements" ? <ElementsTab /> : null}
       {leftTab === "text" ? <TextTab /> : null}
       {leftTab === "background" ? <BackgroundTab /> : null}

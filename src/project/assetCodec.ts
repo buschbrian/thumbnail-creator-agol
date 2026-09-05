@@ -80,11 +80,6 @@ async function portableSource(
   fetchBlob: (src: string) => Promise<Blob>,
 ): Promise<string> {
   if (PORTABLE_IMAGE_RE.test(layer.src)) return layer.src;
-  if (!layer.src.startsWith("blob:")) {
-    throw new ProjectAssetEncodingError(
-      `Could not embed “${layer.name}”. Only local session images can be exported.`,
-    );
-  }
 
   try {
     return await blobToDataUrl(await fetchBlob(layer.src));
@@ -106,6 +101,7 @@ export async function embedProjectAssets(
   options: AssetCodecOptions = {},
 ): Promise<DesignState> {
   const fetchBlob = options.fetchObjectUrl ?? fetchObjectUrl;
+  // Check all sources before reading any assets; portableSource only receives local URLs.
   for (const layer of state.layers) {
     if (
       (layer.type === "backgroundImage" || layer.type === "logo") &&
