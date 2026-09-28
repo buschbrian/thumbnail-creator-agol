@@ -6,10 +6,12 @@ other preset) thumbnails without firing up a design tool.
 
 **No backend. No uploads. Everything runs in your browser.**
 
+**Use it:** <https://buschbrian.github.io/thumbnail-creator-agol/>
+
 ## Features
 
-- **Canva-style editing surface** — icon rail (Templates / Elements / Text /
-  Canvas), drag-and-drop canvas with snapping, zoom controls, double-click to
+- **Canva-style editing surface** — icon rail (Templates / Brand / Elements /
+  Text / Canvas), drag-and-drop canvas with snapping, zoom controls, double-click to
   edit, arrow-key nudging, and drop-an-image-to-set-background.
 - **AGOL item-type templates** — preloaded designs for Web maps, Feature
   layers, Dashboards, Story maps, Apps, Scenes, Surveys and Datasets, plus
@@ -19,6 +21,18 @@ other preset) thumbnails without firing up a design tool.
   (item type, title, composition), embedded into the exported file's metadata
   (PNG `Description` / `Alt Text` chunks, JPEG `COM`), editable with an
   override, and copyable for ArcGIS Online's item Alt Text field.
+- **Generate from ArcGIS** — paste a public ArcGIS Online / Enterprise item
+  URL, a bare item ID, or an ArcGIS Server service URL. The app reads the
+  item's public metadata, picks a matching template, and fills in the title,
+  summary, and item type. It can optionally reuse the item's existing
+  thumbnail as the background and tint the design with your brand kit. Only
+  anonymous, read-only requests are made, so the item must be shared
+  publicly.
+- **Brand kit** — save a brand name, logo, and palette (up to 64 colors).
+  Import colors from a file or pasted text (hex lists, `rgb()`, CSS/SCSS
+  variables, JSON palettes, GIMP `.gpl`, Coolors URLs), extract colors from
+  the logo, and share the kit as a `.brandkit.json` file. The kit is saved in
+  your browser's localStorage; nothing else is.
 - **Presets** — ArcGIS Online 600 × 400 (default), Square 400 × 400,
   High-res 1200 × 800, plus custom sizes (existing layers rescale).
 - **Elements** — styled text presets (heading, impact, label chip…), logo
@@ -33,6 +47,7 @@ other preset) thumbnails without firing up a design tool.
 - **Editable project download** — saves a validated, versioned
   `.thumbnail.json` file with local PNG/JPEG/WebP assets embedded for
   portability. Large project files require confirmation before download.
+  (Opening a project file back in the app is not built yet.)
 
 ## Getting started
 
@@ -41,7 +56,8 @@ npm install     # also copies Calcite assets + generates the icon catalog
 npm run dev     # http://localhost:5173/thumbnail-creator-agol/
 ```
 
-Requires Node 20+.
+Requires Node 20.19+ or 22.12+ (Vite 8's minimum). CI builds with Node 22.
+Run `npx playwright install chromium` once before `npm run test:e2e`.
 
 ## Scripts
 
@@ -67,24 +83,18 @@ Requires Node 20+.
 
 ## Deployment (GitHub Pages)
 
-A workflow at `.github/workflows/deploy.yml` builds and deploys on every push
-to `main`. One-time setup after creating the GitHub repo:
+`.github/workflows/deploy.yml` builds and deploys to GitHub Pages on every
+push to `main`; the live site is
+<https://buschbrian.github.io/thumbnail-creator-agol/>.
 
-```bash
-git remote add origin https://github.com/<you>/thumbnail-creator-agol.git
-git push -u origin main
-```
-
-Then on GitHub: **Settings → Pages → Build and deployment → Source:
-GitHub Actions**. The site will be served at
-`https://<you>.github.io/thumbnail-creator-agol/`.
-
-The Vite `base` path is already set to `/thumbnail-creator-agol/`; if you
-rename the repo, update `base` in `vite.config.ts` to match.
+To deploy your own fork, set **Settings → Pages → Build and deployment →
+Source** to **GitHub Actions**. The Vite `base` path is set to
+`/thumbnail-creator-agol/`; if you rename the repo, update `base` in
+`vite.config.ts` to match.
 
 ## Licensing notes
 
-- All project code here: MIT (see below).
+- All project code here: MIT.
 - The UI uses the **Esri Calcite Design System** and **Calcite UI Icons**
   (npm packages `@esri/calcite-components`, `@esri/calcite-ui-icons`),
   which are © Esri and provided under the [Esri Master Agreement
@@ -97,6 +107,8 @@ rename the repo, update `base` in `vite.config.ts` to match.
 
 ```
 src/
+  agol/        ArcGIS URL parsing, public metadata fetch, generate-from-item
+  brand/       brand kit store, color parsing, logo theme extraction
   canvas/      Konva stage, layer renderers, snapping, fit-to-viewport
   export/      offscreen export rendering, filename + validation logic
   hooks/       DOM event binding, keyboard shortcuts, history flags
@@ -106,6 +118,10 @@ src/
   project/     portable project schema, asset codec, and file operations
   state/       Zustand store, layer types, undo/redo
   templates/   template definitions (layer factories)
+  ui/          UI-only state (panels, alerts, export settings)
 scripts/       asset copying (postinstall) + icon catalog generation
 e2e/           Playwright smoke tests
+tasks/         roadmap (plan.md) and task checklist (todo.md)
 ```
+
+Contributor and coding-agent conventions are in [`AGENTS.md`](AGENTS.md).
