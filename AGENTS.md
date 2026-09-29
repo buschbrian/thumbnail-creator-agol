@@ -24,7 +24,9 @@ Vite because the tool is 100% client-side.
 - `npm run build` — icon generation + `tsc -b` + vite build
 - `npm run lint` / `npm run typecheck`
 - `npm run test` — Vitest unit tests
-- `npm run test:e2e` — Playwright (needs `npx playwright install chromium` once)
+- `npm run test:e2e` — Playwright against installed Google Chrome. For a
+  nonstandard installation, set `CHROME_EXECUTABLE_PATH` to its executable.
+  Do not download Playwright browsers.
 
 After changes: run lint, typecheck, test, and build. Keep all four green.
 

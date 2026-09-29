@@ -57,7 +57,11 @@ npm run dev     # http://localhost:5173/thumbnail-creator-agol/
 ```
 
 Requires Node 20.19+ or 22.12+ (Vite 8's minimum). CI builds with Node 22.
-Run `npx playwright install chromium` once before `npm run test:e2e`.
+`npm run test:e2e` uses Google Chrome already installed on the machine.
+CI runners also need Chrome available. For a nonstandard installation, set
+`CHROME_EXECUTABLE_PATH` to the Chrome executable; on macOS the usual path is
+`/Applications/Google Chrome.app/Contents/MacOS/Google Chrome`.
+No Playwright browser download is needed.
 
 ## Scripts
 
@@ -69,7 +73,7 @@ Run `npx playwright install chromium` once before `npm run test:e2e`.
 | `npm run lint`      | ESLint                                         |
 | `npm run typecheck` | TypeScript project check                       |
 | `npm run test`      | Vitest unit tests                              |
-| `npm run test:e2e`  | Playwright end-to-end tests (Chromium)         |
+| `npm run test:e2e`  | Playwright end-to-end tests (system Chrome)    |
 
 ## Tech stack
 

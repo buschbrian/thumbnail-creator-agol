@@ -1,5 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
 
+const chromeExecutablePath = process.env.CHROME_EXECUTABLE_PATH;
+
 export default defineConfig({
   testDir: "./e2e",
   timeout: 60_000,
@@ -12,7 +14,12 @@ export default defineConfig({
   projects: [
     {
       name: "chromium",
-      use: { ...devices["Desktop Chrome"] },
+      use: {
+        ...devices["Desktop Chrome"],
+        ...(chromeExecutablePath
+          ? { launchOptions: { executablePath: chromeExecutablePath } }
+          : { channel: "chrome" }),
+      },
     },
   ],
   webServer: {
